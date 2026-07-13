@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "630312517221",
+    "project_id": "singlemart-ags",
+    "storage_bucket": "singlemart-ags.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:630312517221:android:6334d1ddb528038c96508c",
+        "android_client_info": {
+          "package_name": "com.agsolutions.singlemartvendor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1YaTFNRmmf6KqSea0SoLWOQ5Vi7vrG-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:630312517221:android:655c3999f237e14d96508c",
+        "android_client_info": {
+          "package_name": "com.singlemart.agsolutions"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1YaTFNRmmf6KqSea0SoLWOQ5Vi7vrG-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
