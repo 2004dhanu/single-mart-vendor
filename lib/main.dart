@@ -4,6 +4,7 @@ import 'services/session_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/pending_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,21 +18,27 @@ void main() async {
 
   final isLoggedIn = await SessionService.isLoggedIn();
   final isVerified = await SessionService.getVerificationStatus();
+  
+  final user = await SessionService.getUserDetails();
+  final isAdmin = user != null && (user['user_type'] == 3 || user['user_position'] == 'Admin');
 
   runApp(MyApp(
     isLoggedIn: isLoggedIn,
     isVerified: isVerified,
+    isAdmin: isAdmin,
   ));
 }
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
   final int isVerified;
+  final bool isAdmin;
 
   const MyApp({
     super.key,
     required this.isLoggedIn,
     required this.isVerified,
+    required this.isAdmin,
   });
 
   @override
@@ -39,7 +46,9 @@ class MyApp extends StatelessWidget {
     Widget initialHome;
 
     if (isLoggedIn) {
-      if (isVerified == 1) {
+      if (isAdmin) {
+        initialHome = const AdminDashboardScreen();
+      } else if (isVerified == 1) {
         initialHome = const DashboardScreen();
       } else {
         initialHome = const PendingScreen();

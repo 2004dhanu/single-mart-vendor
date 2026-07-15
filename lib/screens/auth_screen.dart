@@ -6,6 +6,7 @@ import '../services/session_service.dart';
 import 'register_screen.dart';
 import 'pending_screen.dart';
 import 'dashboard_screen.dart';
+import 'admin_dashboard_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -190,12 +191,22 @@ class _AuthScreenState extends State<AuthScreen> {
         final token = loginResult['data']['token'] as String;
         final userMap = loginResult['data']['user'] as Map<String, dynamic>;
         
+        // Merge root-level address list from the login response
+        final addressList = loginResult['address'] as List<dynamic>? ?? [];
+        userMap['addresses'] = addressList;
+        
         await SessionService.saveSession(token, userMap);
         
         final isVerified = userMap['is_verified'] as int? ?? 0;
+        final isAdmin = userMap['user_type'] == 3 || userMap['user_position'] == 'Admin';
         
         if (mounted) {
-          if (isVerified == 1) {
+          if (isAdmin) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+              (route) => false,
+            );
+          } else if (isVerified == 1) {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const DashboardScreen()),
               (route) => false,

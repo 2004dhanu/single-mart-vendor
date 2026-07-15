@@ -313,6 +313,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         fields['addresses[0][id]'] = _addressId!;
       }
 
+      // Preserve other addresses to prevent backend from deleting them
+      final List<dynamic> existingAddresses = widget.userDetails['addresses'] as List<dynamic>? ?? [];
+      for (int i = 1; i < existingAddresses.length; i++) {
+        final addr = existingAddresses[i] as Map<String, dynamic>;
+        fields['addresses[$i][id]'] = addr['id']?.toString() ?? '';
+        fields['addresses[$i][address_line_1]'] = addr['address_line_1']?.toString() ?? '';
+        fields['addresses[$i][address_line_2]'] = addr['address_line_2']?.toString() ?? '';
+        fields['addresses[$i][landmark]'] = addr['landmark']?.toString() ?? '';
+        fields['addresses[$i][city]'] = addr['city']?.toString() ?? '';
+        fields['addresses[$i][district]'] = addr['district']?.toString() ?? '';
+        fields['addresses[$i][state]'] = addr['state']?.toString() ?? '';
+        fields['addresses[$i][country]'] = addr['country']?.toString() ?? '';
+        fields['addresses[$i][pincode]'] = addr['pincode']?.toString() ?? '';
+        fields['addresses[$i][address_type]'] = addr['address_type']?.toString() ?? 'Shop';
+        fields['addresses[$i][is_default]'] = addr['is_default']?.toString() ?? '0';
+      }
+
       // Populate files (only add files that were explicitly changed)
       final Map<String, File> files = {};
       if (_userImageFile != null) {
