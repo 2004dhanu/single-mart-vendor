@@ -5,6 +5,9 @@ import 'auth_screen.dart';
 import 'edit_profile_screen.dart';
 import 'category_list_screen.dart';
 import 'brand_list_screen.dart';
+import 'product_list_screen.dart';
+import 'address_list_screen.dart';
+import 'vendor_order_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -18,10 +21,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = false;
   int _currentIndex = 0;
 
+  // Stats State
+  List<dynamic> _allOrders = [];
+  List<dynamic> _filteredOrders = [];
+  List<dynamic> _products = [];
+  DateTimeRange? _selectedDateRange;
+
+  double _totalSales = 0.0;
+  int _totalOrdersCount = 0;
+  int _pendingOrdersCount = 0;
+  int _completedOrdersCount = 0;
+  int _todayOrdersCount = 0;
+  int _totalProductsCount = 0;
+
   @override
   void initState() {
     super.initState();
     _loadUserDetails();
+  }
+
+  String _formatDate(DateTime dt) {
+    return "${dt.day} ${_getMonthName(dt.month)} ${dt.year}";
+  }
+
+  String _getMonthName(int m) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[m - 1];
+  }
+
+  void _calculateStats() {
+    _filteredOrders = List.from(_allOrders);
+    
+    // Apply calendar range filter if selected
+    if (_selectedDateRange != null) {
+      _filteredOrders = _allOrders.where((ord) {
+        final dateStr = ord['order_date']?.toString() ?? '';
+        try {
+          final date = DateTime.parse(dateStr);
+          final start = DateTime(_selectedDateRange!.start.year, _selectedDateRange!.start.month, _selectedDateRange!.start.day);
+          final end = DateTime(_selectedDateRange!.end.year, _selectedDateRange!.end.month, _selectedDateRange!.end.day, 23, 59, 59);
+          return date.isAfter(start.subtract(const Duration(seconds: 1))) && date.isBefore(end.add(const Duration(seconds: 1)));
+        } catch (_) {
+          return false;
+        }
+      }).toList();
+    }
+
+    _totalSales = 0.0;
+    _totalOrdersCount = _filteredOrders.length;
+    _pendingOrdersCount = 0;
+    _completedOrdersCount = 0;
+    _todayOrdersCount = 0;
+
+    final today = DateTime.now();
+
+    for (var ord in _filteredOrders) {
+      final dateStr = ord['order_date']?.toString() ?? '';
+      try {
+        final orderDate = DateTime.parse(dateStr);
+        if (orderDate.year == today.year && orderDate.month == today.month && orderDate.day == today.day) {
+          _todayOrdersCount++;
+        }
+      } catch (_) {}
+
+      final subs = ord['subs'] as List<dynamic>? ?? [];
+      for (var item in subs) {
+        final amountStr = item['order_amount']?.toString() ?? '0.00';
+        final amount = double.tryParse(amountStr) ?? 0.0;
+
+        final orderStatus = item['order_status']?.toString().toLowerCase() ?? '';
+        final paymentStatus = item['payment_status']?.toString().toLowerCase() ?? '';
+
+        // Calculate sales only when payment status is "received"
+        if (paymentStatus == 'received') {
+          _totalSales += amount;
+        }
+
+        if (orderStatus == 'pending') {
+          _pendingOrdersCount++;
+        } else if (orderStatus == 'delivered') {
+          _completedOrdersCount++;
+        }
+      }
+    }
   }
 
   Future<void> _loadUserDetails() async {
@@ -29,7 +111,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _isLoading = true;
     });
 
-    // 1. Load details from local session first
     final details = await SessionService.getUserDetails();
     if (details != null) {
       setState(() {
@@ -37,11 +118,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
     }
 
-    // 2. Fetch fresh details from the API to stay synchronized
     final token = await SessionService.getToken();
-    if (details != null && details['id'] != null && token != null && token != 'offline_placeholder_token') {
+    final rawId = details?['id'];
+    final id = rawId != null ? int.tryParse(rawId.toString()) : null;
+
+    if (details != null && id != null && token != null) {
       try {
-        final id = details['id'] as int;
+        int currentId = id;
         final response = await ApiService.fetchVendorById(id, token);
         if (response['code'] == 200 && response['data'] != null) {
           final freshUser = response['data'] as Map<String, dynamic>;
@@ -51,9 +134,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _userDetails = freshUser;
             });
           }
+          final freshId = int.tryParse(freshUser['id']?.toString() ?? '');
+          if (freshId != null) {
+            currentId = freshId;
+          }
+        }
+
+        // Fetch products count
+        final prodResp = await ApiService.fetchProducts(token);
+        if (prodResp['code'] == 200 && prodResp['data'] != null) {
+          final pList = prodResp['data'] as List<dynamic>;
+          _products = pList;
+          _totalProductsCount = pList.length;
+        }
+
+        // Fetch orders count & stats
+        final orderResp = await ApiService.fetchOrders(token);
+        if (orderResp['code'] == 200 && orderResp['data'] != null) {
+          final oList = orderResp['data'] as List<dynamic>;
+          
+          final vendorOrders = <dynamic>[];
+          for (var ord in oList) {
+            final subs = ord['subs'] as List<dynamic>? ?? [];
+            final mySubs = subs.where((s) => s['order_vendor_id']?.toString() == currentId.toString()).toList();
+            if (mySubs.isNotEmpty) {
+              final ordCopy = Map<String, dynamic>.from(ord);
+              ordCopy['subs'] = mySubs;
+              vendorOrders.add(ordCopy);
+            }
+          }
+          
+          _allOrders = vendorOrders;
+          _calculateStats();
         }
       } catch (e) {
-        debugPrint('Error loading fresh profile: $e');
+        debugPrint('Error loading fresh data: $e');
       }
     }
 
@@ -111,27 +226,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final qrPath = _userDetails?['qr_code'] as String?;
     final docPath = _userDetails?['business_document'] as String?;
 
-    // Extract address details
-    String addressText = 'N/A';
-    String addressType = 'Shop';
     final addresses = _userDetails?['addresses'] as List<dynamic>?;
-    if (addresses != null && addresses.isNotEmpty) {
-      final addr = addresses[0] as Map<String, dynamic>;
-      addressType = addr['address_type'] ?? 'Shop';
-      final parts = [
-        addr['address_line_1'],
-        addr['address_line_2'],
-        addr['landmark'],
-        addr['city'],
-        addr['district'],
-        addr['state'],
-        addr['country'],
-        addr['pincode'],
-      ].where((p) => p != null && p.toString().trim().isNotEmpty).toList();
-      if (parts.isNotEmpty) {
-        addressText = parts.join(', ');
-      }
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -165,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.all(20.0),
                 child: _currentIndex == 0
                     ? _buildDashboardTab(name, ownerName, position, mobile, email, upi, gst, pan, avatarPath)
-                    : _buildProfileTab(name, ownerName, position, mobile, email, gender, dob, upi, gst, pan, addressType, addressText, avatarPath, qrPath, docPath),
+                    : _buildProfileTab(name, ownerName, position, mobile, email, gender, dob, upi, gst, pan, addresses, avatarPath, qrPath, docPath),
               ),
             ),
       bottomNavigationBar: BottomNavigationBar(
@@ -274,11 +369,85 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Statistics Header
-        const Text(
-          'Sales Performance',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+        // Statistics Header & Date Range Picker
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Sales Performance',
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            IconButton(
+              icon: Icon(
+                _selectedDateRange == null ? Icons.calendar_today_rounded : Icons.calendar_month_rounded,
+                color: Colors.cyanAccent,
+                size: 20,
+              ),
+              tooltip: 'Filter by Date Range',
+              onPressed: () async {
+                final range = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2030),
+                  initialDateRange: _selectedDateRange,
+                  builder: (context, child) {
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.dark(
+                          primary: Colors.cyanAccent,
+                          onPrimary: Colors.black,
+                          surface: Color(0xFF1E1B4B),
+                          onSurface: Colors.white,
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+                if (range != null) {
+                  setState(() {
+                    _selectedDateRange = range;
+                    _calculateStats();
+                  });
+                }
+              },
+            ),
+          ],
         ),
+        if (_selectedDateRange != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.cyanAccent.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.cyanAccent.withOpacity(0.15)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.date_range, color: Colors.cyanAccent, size: 14),
+                const SizedBox(width: 8),
+                Text(
+                  'Filtered: ${_formatDate(_selectedDateRange!.start)} - ${_formatDate(_selectedDateRange!.end)}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedDateRange = null;
+                      _calculateStats();
+                    });
+                  },
+                  child: const Text(
+                    'Clear',
+                    style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
 
         // Statistics Grid
@@ -290,10 +459,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
           children: [
-            _buildStatCard('Total Sales', '₹45,230', Icons.currency_rupee, Colors.greenAccent),
-            _buildStatCard('Orders', '189', Icons.shopping_bag, Colors.blueAccent),
-            _buildStatCard('Products', '24', Icons.inventory_2, Colors.purpleAccent),
-            _buildStatCard('Rating', '4.8 / 5', Icons.star, Colors.amberAccent),
+            _buildStatCard('Total Sales', '₹${_totalSales.toStringAsFixed(2)}', Icons.currency_rupee, Colors.greenAccent),
+            _buildStatCard('Total Orders', '$_totalOrdersCount', Icons.shopping_bag_outlined, Colors.blueAccent),
+            _buildStatCard('Pending Orders', '$_pendingOrdersCount', Icons.pending_actions_rounded, Colors.orangeAccent),
+            _buildStatCard('Completed Orders', '$_completedOrdersCount', Icons.task_alt_rounded, Colors.cyanAccent),
+            _buildStatCard('Today\'s Orders', '$_todayOrdersCount', Icons.today_rounded, Colors.purpleAccent),
+            _buildStatCard('Total Products', '$_totalProductsCount', Icons.inventory_2_outlined, Colors.amberAccent),
           ],
         ),
         const SizedBox(height: 24),
@@ -332,6 +503,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           },
         ),
+        const SizedBox(height: 12),
+
+        _buildActionCard(
+          title: 'Manage Products',
+          subtitle: 'Add, edit, view & manage store products',
+          icon: Icons.inventory_2_rounded,
+          color: Colors.orangeAccent,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProductListScreen()),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+
+        _buildActionCard(
+          title: 'Manage Orders',
+          subtitle: 'View customer orders, update payment and status',
+          icon: Icons.shopping_bag_rounded,
+          color: Colors.greenAccent,
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const VendorOrderListScreen()),
+            );
+            _loadUserDetails();
+          },
+        ),
         const SizedBox(height: 24),
 
         // Business Information
@@ -364,8 +564,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String upi,
     String gst,
     String pan,
-    String addressType,
-    String addressText,
+    List<dynamic>? addresses,
     String? avatarPath,
     String? qrPath,
     String? docPath,
@@ -480,12 +679,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 24),
 
         // Section: Address
-        _buildProfileSectionHeader('Address details'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: _buildProfileSectionHeader('Address details')),
+            TextButton.icon(
+              onPressed: () async {
+                if (_userDetails != null) {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddressListScreen(userDetails: _userDetails!),
+                    ),
+                  );
+                  _loadUserDetails();
+                }
+              },
+              icon: const Icon(Icons.settings, color: Colors.cyanAccent, size: 14),
+              label: const Text('Manage', style: TextStyle(color: Colors.cyanAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
-        _buildDetailCard([
-          _buildDetailRow('Address Type', addressType, Icons.home_work_outlined),
-          _buildDetailRow('Complete Address', addressText, Icons.location_on_outlined),
-        ]),
+        if (addresses == null || addresses.isEmpty)
+          _buildDetailCard([
+            _buildDetailRow('Complete Address', 'N/A', Icons.location_on_outlined),
+          ])
+        else
+          ...addresses.map((addr) {
+            final isDefault = (addr['is_default'] == 1 || addr['is_default'] == '1');
+            final type = addr['address_type']?.toString() ?? 'Shop';
+            final parts = [
+              addr['address_line_1'],
+              addr['address_line_2'],
+              addr['landmark'],
+              addr['city'],
+              addr['district'],
+              addr['state'],
+              addr['country'],
+              addr['pincode'],
+            ].where((p) => p != null && p.toString().trim().isNotEmpty).toList();
+            final text = parts.isEmpty ? 'N/A' : parts.join(', ');
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: _buildDetailCard([
+                _buildDetailRow(
+                  '${type.toUpperCase()}${isDefault ? ' (DEFAULT)' : ''}',
+                  text,
+                  isDefault ? Icons.stars : Icons.location_on_outlined,
+                  valueColor: isDefault ? Colors.cyanAccent : Colors.white70,
+                ),
+              ]),
+            );
+          }),
         const SizedBox(height: 24),
 
         // Section: Documents
@@ -608,10 +855,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, IconData icon) {
+  Widget _buildDetailRow(String label, String value, IconData icon, {Color? valueColor}) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.4), size: 20),
+        Icon(icon, color: valueColor ?? Colors.white.withOpacity(0.4), size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -619,12 +866,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                style: TextStyle(color: valueColor?.withOpacity(0.7) ?? Colors.white.withOpacity(0.5), fontSize: 11),
               ),
               const SizedBox(height: 2),
               Text(
                 value.isEmpty ? 'N/A' : value,
-                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+                style: TextStyle(color: valueColor ?? Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ],
           ),

@@ -44,8 +44,36 @@ class _BrandListScreenState extends State<BrandListScreen> {
       final response = await ApiService.fetchBrands(token);
       final code = response['code'] as int? ?? 200;
       if (code == 200 && response['data'] != null) {
+        final rawBrands = response['data'] as List<dynamic>;
+
+        final details = await SessionService.getUserDetails();
+        final isAdmin = details?['user_type'] == 3 || details?['user_position'] == 'Admin';
+        final vendorName = details?['name']?.toString() ?? '';
+        final ownerName = details?['owner_name']?.toString() ?? '';
+
+        List<dynamic> filtered = [];
+        if (isAdmin) {
+          filtered = rawBrands;
+        } else {
+          final futures = rawBrands.map((brand) async {
+            try {
+              final id = brand['id'] as int;
+              final detailRes = await ApiService.fetchBrandById(id, token);
+              if (detailRes['data'] != null) {
+                final createdBy = detailRes['data']['created_by']?.toString().toLowerCase();
+                if (createdBy == vendorName.toLowerCase() || createdBy == ownerName.toLowerCase()) {
+                  return brand;
+                }
+              }
+            } catch (_) {}
+            return null;
+          });
+          final results = await Future.wait(futures);
+          filtered = results.where((b) => b != null).toList();
+        }
+
         setState(() {
-          _brands = response['data'] as List<dynamic>;
+          _brands = filtered;
           _filteredBrands = List.from(_brands);
         });
       } else {

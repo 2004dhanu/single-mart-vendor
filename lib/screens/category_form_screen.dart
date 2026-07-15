@@ -155,6 +155,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
 
         if (sub.id != null) {
           fields['subs[$i][id]'] = sub.id!;
+          fields['subs[$i][categories_subs_id]'] = sub.id!;
         }
 
         if (sub.localImageFile != null) {
@@ -165,6 +166,17 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       Map<String, dynamic> response;
       if (_isEditMode) {
         final catId = widget.category!['id'] as int;
+        print("=========FIELDS==========");
+
+fields.forEach((k,v){
+  print("$k : $v");
+});
+
+print("=========FILES==========");
+
+files.forEach((k,v){
+  print("$k : ${v.path}");
+});
         response = await ApiService.updateCategory(
           id: catId,
           token: token,

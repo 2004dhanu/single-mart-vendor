@@ -67,8 +67,34 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           }
         }
 
+        final details = await SessionService.getUserDetails();
+        final isAdmin = details?['user_type'] == 3 || details?['user_position'] == 'Admin';
+        final vendorName = details?['name']?.toString() ?? '';
+        final ownerName = details?['owner_name']?.toString() ?? '';
+
+        List<dynamic> filtered = [];
+        if (isAdmin) {
+          filtered = rawList;
+        } else {
+          final futures = rawList.map((cat) async {
+            try {
+              final id = cat['id'] as int;
+              final detailRes = await ApiService.fetchCategoryById(id, token);
+              if (detailRes['data'] != null) {
+                final createdBy = detailRes['data']['created_by']?.toString().toLowerCase();
+                if (createdBy == vendorName.toLowerCase() || createdBy == ownerName.toLowerCase()) {
+                  return cat;
+                }
+              }
+            } catch (_) {}
+            return null;
+          });
+          final results = await Future.wait(futures);
+          filtered = results.where((c) => c != null).toList();
+        }
+
         setState(() {
-          _categories = rawList;
+          _categories = filtered;
           _filterCategories(_searchQuery);
         });
       } else {
