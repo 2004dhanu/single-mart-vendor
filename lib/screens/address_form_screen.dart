@@ -207,16 +207,18 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: Text(
           _isEditMode ? 'Edit Address' : 'Add Address',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+          ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -226,16 +228,16 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.04),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(0.1)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: Column(
                         children: [
                           DropdownButtonFormField<String>(
                             value: _selectedType,
-                            dropdownColor: const Color(0xFF1E1B4B),
-                            style: const TextStyle(color: Colors.white),
+                            dropdownColor: Colors.white,
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Address Type', Icons.home_work_outlined),
                             items: const [
                               DropdownMenuItem(value: 'Shop', child: Text('Shop')),
@@ -251,20 +253,20 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _line1Controller,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Address Line 1', Icons.location_on_outlined),
                             validator: (v) => v!.isEmpty ? 'Address Line 1 is required' : null,
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _line2Controller,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Address Line 2', Icons.location_on_outlined),
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _landmarkController,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Landmark', Icons.pin_drop_outlined),
                           ),
                           const SizedBox(height: 16),
@@ -273,7 +275,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _cityController,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: const Color(0xFF0F172A)),
                                   decoration: _buildInputDecoration('City', Icons.location_city_outlined),
                                   validator: (v) => v!.isEmpty ? 'Required' : null,
                                 ),
@@ -282,7 +284,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _districtController,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: const Color(0xFF0F172A)),
                                   decoration: _buildInputDecoration('District', Icons.map_outlined),
                                   validator: (v) => v!.isEmpty ? 'Required' : null,
                                 ),
@@ -295,7 +297,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _stateController,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: const Color(0xFF0F172A)),
                                   decoration: _buildInputDecoration('State', Icons.explore_outlined),
                                   validator: (v) => v!.isEmpty ? 'Required' : null,
                                 ),
@@ -304,7 +306,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _pincodeController,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: const Color(0xFF0F172A)),
                                   keyboardType: TextInputType.number,
                                   decoration: _buildInputDecoration('Pincode', Icons.pin_outlined),
                                   validator: (v) => v!.isEmpty ? 'Required' : null,
@@ -315,7 +317,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _countryController,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Country', Icons.public_outlined),
                             validator: (v) => v!.isEmpty ? 'Country is required' : null,
                           ),
@@ -327,10 +329,10 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                       title: const Text('Set as Default Address', style: TextStyle(color: Colors.white, fontSize: 15)),
                       subtitle: Text(
                         'This will make this address the primary shop address.',
-                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                        style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 12),
                       ),
                       value: _isDefault,
-                      activeColor: Colors.cyanAccent,
+                      activeColor: const Color(0xFFF97316),
                       onChanged: (val) {
                         // If it's the first or only address, it must stay default
                         if (!val && widget.addressesList.isEmpty) return;
@@ -345,8 +347,8 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.cyanAccent,
-                          foregroundColor: const Color(0xFF1E1B4B),
+                          backgroundColor: const Color(0xFFF97316),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -368,17 +370,17 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   InputDecoration _buildInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
-      prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.4), size: 18),
+      labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 13),
+      prefixIcon: Icon(icon, color: const Color(0xFF0F172A).withOpacity(0.4), size: 18),
       filled: true,
-      fillColor: Colors.white.withOpacity(0.02),
+      fillColor: Colors.white,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Colors.cyanAccent),
+        borderSide: const BorderSide(color: const Color(0xFFF97316)),
       ),
     );
   }

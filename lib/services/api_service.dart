@@ -1,8 +1,40 @@
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ApiService {
+  static Future<void> _attachFiles(http.MultipartRequest request, Map<String, dynamic> files) async {
+    for (var entry in files.entries) {
+      final fileVal = entry.value;
+      if (fileVal == null) continue;
+
+      if (kIsWeb) {
+        try {
+          final bytes = await (fileVal as dynamic).readAsBytes();
+          final String name = (fileVal as dynamic).name ?? 'image.jpg';
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              entry.key,
+              bytes,
+              filename: name,
+            ),
+          );
+        } catch (e) {
+          debugPrint('Error attaching file in web: $e');
+        }
+      } else {
+        final String path = fileVal is File ? fileVal.path : (fileVal as dynamic).path;
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            entry.key,
+            path,
+          ),
+        );
+      }
+    }
+  }
+
   static const String baseUrl = 'https://agsdemo.in/singlemartapi/public/api';
 
   /// Checks if the mobile number is registered.
@@ -48,7 +80,7 @@ class ApiService {
   /// Registers a new vendor in the system using multipart form-data.
   static Future<Map<String, dynamic>> createVendor({
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/createvendor');
     try {
@@ -60,15 +92,7 @@ class ApiService {
       // Add text fields
       request.fields.addAll(fields);
       
-      // Add files using fromPath (matching backend suggestion)
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
       
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -156,7 +180,9 @@ class ApiService {
       if (response.body.isEmpty) {
         return {'code': response.statusCode, 'message': 'No response body'};
       }
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      decoded['code'] ??= response.statusCode;
+      return decoded;
     } catch (e) {
       return {'code': 500, 'message': 'Connection error: $e'};
     }
@@ -176,7 +202,9 @@ class ApiService {
       if (response.body.isEmpty) {
         return {'code': response.statusCode, 'message': 'No response body'};
       }
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      decoded['code'] ??= response.statusCode;
+      return decoded;
     } catch (e) {
       return {'code': 500, 'message': 'Connection error: $e'};
     }
@@ -196,7 +224,9 @@ class ApiService {
       if (response.body.isEmpty) {
         return {'code': response.statusCode, 'message': 'No response body'};
       }
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      decoded['code'] ??= response.statusCode;
+      return decoded;
     } catch (e) {
       return {'code': 500, 'message': 'Connection error: $e'};
     }
@@ -219,7 +249,9 @@ class ApiService {
       if (response.body.isEmpty) {
         return {'code': response.statusCode, 'message': 'No response body'};
       }
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      decoded['code'] ??= response.statusCode;
+      return decoded;
     } catch (e) {
       return {'code': 500, 'message': 'Connection error: $e'};
     }
@@ -230,7 +262,7 @@ class ApiService {
     required int id,
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/vendor/$id');
     try {
@@ -244,15 +276,7 @@ class ApiService {
       request.fields.addAll(fields);
       request.fields['_method'] = 'PUT'; // Laravel method spoofing for multipart PUT
       
-      // Add files using fromPath
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
       
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -349,7 +373,7 @@ class ApiService {
   static Future<Map<String, dynamic>> createCategory({
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/category');
     try {
@@ -358,14 +382,7 @@ class ApiService {
       request.headers['Accept'] = 'application/json';
       request.fields.addAll(fields);
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -388,7 +405,7 @@ class ApiService {
     required int id,
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/category/$id');
     try {
@@ -398,14 +415,7 @@ class ApiService {
       request.fields.addAll(fields);
       request.fields['_method'] = 'PUT'; // Laravel method spoofing
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -526,7 +536,7 @@ class ApiService {
   static Future<Map<String, dynamic>> createBrand({
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/brand');
     try {
@@ -535,14 +545,7 @@ class ApiService {
       request.headers['Accept'] = 'application/json';
       request.fields.addAll(fields);
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -565,7 +568,7 @@ class ApiService {
     required int id,
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/brand/$id');
     try {
@@ -575,14 +578,7 @@ class ApiService {
       request.fields.addAll(fields);
       request.fields['_method'] = 'PUT'; // Laravel method spoofing
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -692,7 +688,7 @@ class ApiService {
   static Future<Map<String, dynamic>> createProduct({
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/product');
     try {
@@ -701,14 +697,7 @@ class ApiService {
       request.headers['Accept'] = 'application/json';
       request.fields.addAll(fields);
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -731,7 +720,7 @@ class ApiService {
     required int id,
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/product/$id');
     try {
@@ -741,14 +730,7 @@ class ApiService {
       request.fields.addAll(fields);
       request.fields['_method'] = 'PUT'; // Laravel method spoofing
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -820,7 +802,7 @@ class ApiService {
   static Future<Map<String, dynamic>> createBanner({
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/banner');
     try {
@@ -829,14 +811,7 @@ class ApiService {
       request.headers['Accept'] = 'application/json';
       request.fields.addAll(fields);
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -859,7 +834,7 @@ class ApiService {
     required int id,
     required String token,
     required Map<String, String> fields,
-    required Map<String, File> files,
+    required Map<String, dynamic> files,
   }) async {
     final url = Uri.parse('$baseUrl/banner/$id');
     try {
@@ -869,14 +844,7 @@ class ApiService {
       request.fields.addAll(fields);
       request.fields['_method'] = 'PUT';
 
-      for (var entry in files.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            entry.key,
-            entry.value.path,
-          ),
-        );
-      }
+      await _attachFiles(request, files);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -1042,6 +1010,158 @@ class ApiService {
         },
         body: jsonEncode({
           'order_status': orderStatus,
+        }),
+      );
+      if (response.body.isEmpty) {
+        return {'code': response.statusCode, 'message': 'No response body'};
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      return {'code': 500, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// Fetches all product reviews.
+  static Future<Map<String, dynamic>> fetchProductReviews(String token) async {
+    final url = Uri.parse('$baseUrl/product-review');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.body.isEmpty) {
+        return {'code': response.statusCode, 'message': 'No response body'};
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      return {'code': 500, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// Deletes a product review by ID.
+  static Future<Map<String, dynamic>> deleteProductReview(int id, String token) async {
+    final url = Uri.parse('$baseUrl/product-review/$id');
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.body.isEmpty) {
+        return {'code': response.statusCode, 'message': 'No response body'};
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      return {'code': 500, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// Fetches all attributes.
+  static Future<Map<String, dynamic>> fetchAttributes(String token) async {
+    final url = Uri.parse('$baseUrl/attribute');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.body.isEmpty) {
+        return {'code': response.statusCode, 'message': 'No response body'};
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      return {'code': 500, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// Fetches attribute by ID.
+  static Future<Map<String, dynamic>> fetchAttributeById(int id, String token) async {
+    final url = Uri.parse('$baseUrl/attribute/$id');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      if (response.body.isEmpty) {
+        return {'code': response.statusCode, 'message': 'No response body'};
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      return {'code': 500, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// Creates a new attribute.
+  static Future<Map<String, dynamic>> createAttribute(String token, Map<String, dynamic> body) async {
+    final url = Uri.parse('$baseUrl/attribute');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+      if (response.body.isEmpty) {
+        return {'code': response.statusCode, 'message': 'No response body'};
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      return {'code': 500, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// Updates an attribute.
+  static Future<Map<String, dynamic>> updateAttribute(int id, String token, Map<String, dynamic> body) async {
+    final url = Uri.parse('$baseUrl/attribute/$id');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+      if (response.body.isEmpty) {
+        return {'code': response.statusCode, 'message': 'No response body'};
+      }
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      return {'code': 500, 'message': 'Connection error: $e'};
+    }
+  }
+
+  /// Updates status of an attribute.
+  static Future<Map<String, dynamic>> updateAttributeStatus({
+    required int id,
+    required String token,
+    required String status,
+  }) async {
+    final url = Uri.parse('$baseUrl/attributes/$id/status');
+    try {
+      final response = await http.patch(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'attribute_status': status,
         }),
       );
       if (response.body.isEmpty) {

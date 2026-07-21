@@ -176,16 +176,18 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Subcategories Management',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle, color: Colors.cyanAccent, size: 28),
+            icon: const Icon(Icons.add_circle, color: const Color(0xFFF97316), size: 28),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -206,20 +208,20 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
                 hintText: 'Search subcategories...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.04),
+                fillColor: Colors.white,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.cyanAccent),
+                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
                 ),
               ),
             ),
@@ -228,13 +230,13 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
           // Main List / Loader
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
                 : _filteredSubcategories.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.lan_outlined, color: Colors.white24, size: 64),
+                            const Icon(Icons.lan_outlined, color: const Color(0xFFCBD5E1), size: 64),
                             const SizedBox(height: 16),
                             const Text(
                               'No subcategories found',
@@ -245,7 +247,7 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
                       )
                     : RefreshIndicator(
                         onRefresh: _loadSubcategories,
-                        color: Colors.cyanAccent,
+                        color: const Color(0xFFF97316),
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                           itemCount: _filteredSubcategories.length,
@@ -255,16 +257,16 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12.0),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.04),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.white.withOpacity(0.08)),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
                               ),
                               child: ListTile(
                                 leading: Container(
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.08),
+                                    color: Colors.white,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: sub.image != null && sub.image!.isNotEmpty
@@ -275,7 +277,7 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
                                             fit: BoxFit.cover,
                                           ),
                                         )
-                                      : const Icon(Icons.folder_open_outlined, color: Colors.white30),
+                                      : const Icon(Icons.folder_open_outlined, color: const Color(0xFFCBD5E1)),
                                 ),
                                 title: Text(
                                   sub.name,
@@ -295,7 +297,7 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
                                   child: Text(
                                     'Category: ${sub.categoryName}',
                                     style: const TextStyle(
-                                      color: Colors.purpleAccent,
+                                      color: const Color(0xFFF97316),
                                       fontSize: 11,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -306,12 +308,12 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
                                   children: [
                                     Switch(
                                       value: isActive,
-                                      activeColor: Colors.cyanAccent,
+                                      activeColor: const Color(0xFFF97316),
                                       inactiveThumbColor: Colors.white54,
                                       onChanged: (val) => _toggleStatus(sub, isActive),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.edit_outlined, color: Colors.white70),
+                                      icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
                                       onPressed: () async {
                                         final result = await Navigator.push(
                                           context,

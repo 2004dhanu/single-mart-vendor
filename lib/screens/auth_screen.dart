@@ -19,17 +19,16 @@ class _AuthScreenState extends State<AuthScreen> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
 
-  final String _countryCode = '+91'; // Default country code
+  final String _countryCode = '+91';
   bool _isLoading = false;
   bool _showOtpInput = false;
   String? _verificationId;
   int _timerSeconds = 60;
   Timer? _timer;
 
-  // Session temp variables
   bool _isRegistered = false;
   int _checkMobileCode = 200;
-  String _backendOtp = ''; // Store the OTP/password returned from backend check-mobile
+  String _backendOtp = '';
 
   @override
   void dispose() {
@@ -66,7 +65,6 @@ class _AuthScreenState extends State<AuthScreen> {
       _isLoading = true;
     });
 
-    // 1. Check mobile via backend API
     final checkResult = await ApiService.checkMobile(mobileNum);
     _checkMobileCode = checkResult['code'] as int? ?? 500;
 
@@ -86,12 +84,10 @@ class _AuthScreenState extends State<AuthScreen> {
 
     final fullPhone = '$_countryCode$mobileNum';
 
-    // 2. Trigger Firebase Phone Authentication
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: fullPhone,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          // Auto-retrieval or instant verification on Android
           await _signInWithCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -121,7 +117,7 @@ class _AuthScreenState extends State<AuthScreen> {
       _showFirebaseErrorDialog(
         FirebaseAuthException(
           code: 'exception',
-          message: 'Firebase Auth is not fully configured or initialized. Exception: $e',
+          message: 'Firebase Auth is not fully configured. Exception: $e',
         ),
       );
     }
@@ -162,10 +158,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _signInWithCredential(AuthCredential credential) async {
     try {
-      // 1. Sign in to Firebase
       final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       if (userCredential.user != null) {
-        // Firebase verification succeeded!
         await _handlePostVerificationFlow();
       } else {
         throw Exception('Firebase login failed');
@@ -178,12 +172,10 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  /// Flow after OTP is successfully verified (either Firebase or Fallback bypass)
   Future<void> _handlePostVerificationFlow() async {
     final mobileNum = _phoneController.text.trim();
     
     if (_isRegistered) {
-      // Vendor exists, log them in using check-mobile's generated code/password
       final loginResult = await ApiService.login(mobileNum, _backendOtp);
       final code = loginResult['code'] as int? ?? 500;
       
@@ -191,7 +183,6 @@ class _AuthScreenState extends State<AuthScreen> {
         final token = loginResult['data']['token'] as String;
         final userMap = loginResult['data']['user'] as Map<String, dynamic>;
         
-        // Merge root-level address list from the login response
         final addressList = loginResult['address'] as List<dynamic>? ?? [];
         userMap['addresses'] = addressList;
         
@@ -225,7 +216,6 @@ class _AuthScreenState extends State<AuthScreen> {
         });
       }
     } else {
-      // Unregistered: Go to Registration Screen
       setState(() {
         _isLoading = false;
       });
@@ -249,7 +239,6 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  /// Show helpful dialog when Firebase auth is not configured, with test bypass.
   void _showFirebaseErrorDialog(FirebaseAuthException e) {
     showDialog(
       context: context,
@@ -282,14 +271,14 @@ class _AuthScreenState extends State<AuthScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: const Color(0xFFF97316).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     _isRegistered
                         ? 'Backend verification code for this number is: $_backendOtp'
                         : 'This number is NOT registered. You can proceed directly to the registration page.',
-                    style: const TextStyle(fontSize: 12, color: Colors.blueAccent, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 12, color: Color(0xFFF97316), fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
@@ -298,12 +287,11 @@ class _AuthScreenState extends State<AuthScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF475569))),
           ),
-          // Demo bypass button so developer/client can test immediately without complete firebase configuration
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: const Color(0xFFF97316),
               foregroundColor: Colors.white,
             ),
             onPressed: () {
@@ -322,7 +310,6 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() {
       _isLoading = true;
     });
-    // Direct proceed to API login or registration
     _handlePostVerificationFlow();
   }
 
@@ -337,9 +324,9 @@ class _AuthScreenState extends State<AuthScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1E1B4B), // Deep indigo
-              Color(0xFF311B92), // Rich purple
-              Color(0xFF0F172A), // Dark slate
+              Color(0xFFFFFBEB),
+              Color(0xFFFFF7ED),
+              Color(0xFFF8FAFC),
             ],
           ),
         ),
@@ -350,34 +337,33 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Premium App Logo Placeholder
+                  // App Logo Container
                   Container(
                     width: 90,
                     height: 90,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Colors.cyan, Colors.purpleAccent],
-                      ),
+                      color: Colors.white,
+                      border: Border.all(color: const Color(0xFFFFEDD5), width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.cyan.withOpacity(0.4),
-                          blurRadius: 20,
+                          color: const Color(0xFFF97316).withOpacity(0.1),
+                          blurRadius: 16,
                           spreadRadius: 2,
                         ),
                       ],
                     ),
                     child: const Icon(
                       Icons.storefront_rounded,
-                      size: 48,
-                      color: Colors.white,
+                      size: 44,
+                      color: Color(0xFFF97316),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   const Text(
                     'SINGLE MART',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                       letterSpacing: 2,
@@ -386,25 +372,32 @@ class _AuthScreenState extends State<AuthScreen> {
                   const Text(
                     'Vendor Portal',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.cyanAccent,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                      color: Color(0xFFF97316),
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 1,
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 36),
                   
                   // Interactive Card
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.06),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.12),
+                        color: const Color(0xFFE2E8F0),
                         width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: AnimatedCrossFade(
                       duration: const Duration(milliseconds: 300),
@@ -431,20 +424,21 @@ class _AuthScreenState extends State<AuthScreen> {
         const Text(
           'Mobile Authentication',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 6),
+        const Text(
           'Enter your 10-digit mobile number to verify your identity and access your dashboard.',
           style: TextStyle(
-            fontSize: 13,
-            color: Colors.white.withOpacity(0.7),
+            fontSize: 12,
+            color: Color(0xFF475569),
+            height: 1.4,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         TextField(
           controller: _phoneController,
           keyboardType: TextInputType.phone,
@@ -455,51 +449,51 @@ class _AuthScreenState extends State<AuthScreen> {
             prefixIcon: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(
-                  right: BorderSide(color: Colors.white.withOpacity(0.2)),
+                  right: BorderSide(color: Color(0xFFE2E8F0)),
                 ),
               ),
               child: const Text(
                 '+91',
-                style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
             hintText: 'Enter Phone Number',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+            hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.04),
+            fillColor: const Color(0xFFF8FAFC),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.15)),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.cyanAccent, width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFF97316), width: 1.5),
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
-          height: 50,
+          height: 48,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.cyanAccent,
-              foregroundColor: const Color(0xFF1E1B4B),
+              backgroundColor: const Color(0xFFF97316),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              elevation: 4,
+              elevation: 0,
             ),
             onPressed: _isLoading ? null : _sendOtp,
             child: _isLoading
                 ? const SizedBox(
-                    width: 24,
-                    height: 24,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1B4B)),
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
                 : const Row(
@@ -507,10 +501,10 @@ class _AuthScreenState extends State<AuthScreen> {
                     children: [
                       Text(
                         'Send OTP Code',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(width: 8),
-                      Icon(Icons.arrow_forward_rounded, size: 18),
+                      Icon(Icons.arrow_forward_rounded, size: 16),
                     ],
                   ),
           ),
@@ -526,7 +520,7 @@ class _AuthScreenState extends State<AuthScreen> {
         Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF475569)),
               onPressed: () {
                 setState(() {
                   _showOtpInput = false;
@@ -536,92 +530,94 @@ class _AuthScreenState extends State<AuthScreen> {
             const Text(
               'Enter OTP Code',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Padding(
           padding: const EdgeInsets.only(left: 12.0),
           child: Text(
             'We sent a 6-digit verification code to $_countryCode ${_phoneController.text}.',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withOpacity(0.7),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF475569),
+              height: 1.4,
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         TextField(
           controller: _otpController,
           keyboardType: TextInputType.number,
           maxLength: 6,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Colors.white, 
-            fontSize: 24, 
+            color: Colors.white,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
             letterSpacing: 8,
           ),
           decoration: InputDecoration(
             counterText: '',
             hintText: '000000',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3), letterSpacing: 8),
+            hintStyle: const TextStyle(color: Color(0xFFCBD5E1), letterSpacing: 8),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.04),
+            fillColor: const Color(0xFFF8FAFC),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.15)),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.cyanAccent, width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFF97316), width: 1.5),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Center(
           child: _timerSeconds > 0
               ? Text(
                   'Resend code in $_timerSeconds seconds',
-                  style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13),
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                 )
               : TextButton(
                   onPressed: _isLoading ? null : _sendOtp,
                   child: const Text(
                     'Resend Verification Code',
-                    style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                 ),
         ),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
-          height: 50,
+          height: 48,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.cyanAccent,
-              foregroundColor: const Color(0xFF1E1B4B),
+              backgroundColor: const Color(0xFFF97316),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              elevation: 0,
             ),
             onPressed: _isLoading ? null : _verifyOtp,
             child: _isLoading
                 ? const SizedBox(
-                    width: 24,
-                    height: 24,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1B4B)),
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
                 : const Text(
                     'Verify & Proceed',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
           ),
         ),

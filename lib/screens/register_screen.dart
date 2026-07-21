@@ -77,9 +77,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Colors.cyanAccent,
-              onPrimary: Color(0xFF1E1B4B),
-              surface: Color(0xFF1E1B4B),
+              primary: const Color(0xFFF97316),
+              onPrimary: Colors.white,
+              surface: Colors.white,
               onSurface: Colors.white,
             ),
           ),
@@ -275,12 +275,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text('Vendor Registration', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: const Color(0xFF0F172A)),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -289,7 +291,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: Colors.cyanAccent),
+                  CircularProgressIndicator(color: const Color(0xFFF97316)),
                   SizedBox(height: 16),
                   Text(
                     'Creating your account...',
@@ -483,8 +485,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.cyanAccent,
-                          foregroundColor: const Color(0xFF1E1B4B),
+                          backgroundColor: const Color(0xFFF97316),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -510,10 +512,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         children: [
           CircleAvatar(
             radius: 56,
-            backgroundColor: Colors.white.withOpacity(0.06),
+            backgroundColor: Colors.white,
             backgroundImage: _userImageFile != null ? FileImage(_userImageFile!) : null,
             child: _userImageFile == null
-                ? const Icon(Icons.person_rounded, size: 56, color: Colors.white38)
+                ? const Icon(Icons.person_rounded, size: 56, color: const Color(0xFF64748B))
                 : null,
           ),
           Positioned(
@@ -521,10 +523,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             right: 0,
             child: CircleAvatar(
               radius: 18,
-              backgroundColor: Colors.cyanAccent,
+              backgroundColor: const Color(0xFFF97316),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.camera_alt, size: 18, color: Color(0xFF1E1B4B)),
+                icon: const Icon(Icons.camera_alt, size: 18, color: const Color(0xFF0F172A)),
                 onPressed: () => _pickImage('user_image'),
               ),
             ),
@@ -545,10 +547,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         width: double.infinity,
         height: 110,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.02),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: file == null ? Colors.white24 : Colors.cyanAccent.withOpacity(0.5),
+            color: file == null ? const Color(0xFFCBD5E1) : const Color(0xFFF97316).withOpacity(0.5),
             style: BorderStyle.solid,
             width: 1,
           ),
@@ -557,7 +559,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.cloud_upload_outlined, color: Colors.white.withOpacity(0.4), size: 32),
+                  Icon(Icons.cloud_upload_outlined, color: const Color(0xFF0F172A).withOpacity(0.4), size: 32),
                   const SizedBox(height: 6),
                   Text(
                     'Upload $label',
@@ -566,7 +568,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 2),
                   Text(
                     'PNG or JPG formats supported',
-                    style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11),
+                    style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3), fontSize: 11),
                   ),
                 ],
               )
@@ -591,16 +593,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.check_circle_outline, color: Colors.cyanAccent, size: 28),
+                          const Icon(Icons.check_circle_outline, color: const Color(0xFFF97316), size: 28),
                           const SizedBox(height: 4),
                           Text(
                             '$label Uploaded',
-                            style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(color: const Color(0xFFF97316), fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 2),
                           const Text(
                             'Tap to change file',
-                            style: TextStyle(color: Colors.white70, fontSize: 10),
+                            style: TextStyle(color: const Color(0xFF334155), fontSize: 10),
                           ),
                         ],
                       ),
@@ -617,7 +619,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.cyanAccent, size: 20),
+          Icon(icon, color: const Color(0xFFF97316), size: 20),
           const SizedBox(width: 8),
           Text(
             title,
@@ -633,9 +635,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: children.expand((w) => [w, const SizedBox(height: 12)]).toList()..removeLast(),
@@ -654,20 +656,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: const Color(0xFF0F172A)),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.4), size: 20),
+        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+        prefixIcon: Icon(icon, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.02),
+        fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+          borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -684,21 +686,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildGenderDropdown() {
     return DropdownButtonFormField<String>(
       value: _selectedGender,
-      dropdownColor: const Color(0xFF1E1B4B),
-      style: const TextStyle(color: Colors.white),
+      dropdownColor: Colors.white,
+      style: const TextStyle(color: const Color(0xFF0F172A)),
       decoration: InputDecoration(
         labelText: 'Gender',
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-        prefixIcon: Icon(Icons.people, color: Colors.white.withOpacity(0.4), size: 20),
+        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+        prefixIcon: Icon(Icons.people, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.02),
+        fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+          borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
         ),
       ),
       items: ['Male', 'Female', 'Other']
@@ -715,21 +717,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildAddressTypeDropdown() {
     return DropdownButtonFormField<String>(
       value: _addressType,
-      dropdownColor: const Color(0xFF1E1B4B),
-      style: const TextStyle(color: Colors.white),
+      dropdownColor: Colors.white,
+      style: const TextStyle(color: const Color(0xFF0F172A)),
       decoration: InputDecoration(
         labelText: 'Address Type',
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-        prefixIcon: Icon(Icons.tag, color: Colors.white.withOpacity(0.4), size: 20),
+        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+        prefixIcon: Icon(Icons.tag, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.02),
+        fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+          borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
         ),
       ),
       items: ['Work', 'Home', 'Warehouse', 'Other']

@@ -195,23 +195,25 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Manage Categories',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.cyanAccent),
+            icon: const Icon(Icons.refresh, color: const Color(0xFFF97316)),
             onPressed: _loadCategories,
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.cyanAccent,
-        foregroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: const Color(0xFFF97316),
+        foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add, size: 28),
         onPressed: () async {
@@ -232,14 +234,14 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: _filterCategories,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
                 hintText: 'Search categories...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: Colors.cyanAccent),
+                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                prefixIcon: const Icon(Icons.search, color: const Color(0xFFF97316)),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.white),
+                        icon: const Icon(Icons.clear, color: const Color(0xFF0F172A)),
                         onPressed: () {
                           _searchController.clear();
                           _filterCategories('');
@@ -247,18 +249,18 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.04),
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.white12),
+                  borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.white12),
+                  borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.cyanAccent),
+                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
                 ),
               ),
             ),
@@ -267,13 +269,13 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           // Category List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
                 : _filteredCategories.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.category_outlined, color: Colors.white24, size: 64),
+                            Icon(Icons.category_outlined, color: const Color(0xFFCBD5E1), size: 64),
                             const SizedBox(height: 16),
                             const Text(
                               'No categories found',
@@ -284,7 +286,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                       )
                     : RefreshIndicator(
                         onRefresh: _loadCategories,
-                        color: Colors.cyanAccent,
+                        color: const Color(0xFFF97316),
                         backgroundColor: const Color(0xFF1E293B),
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -345,9 +347,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -363,12 +365,12 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
             },
             leading: CircleAvatar(
               radius: 24,
-              backgroundColor: Colors.white.withOpacity(0.08),
+              backgroundColor: Colors.white,
               backgroundImage: imagePath != null && imagePath.isNotEmpty
                   ? NetworkImage(_resolveCategoryImageUrl(imagePath))
                   : null,
               child: imagePath == null || imagePath.isEmpty
-                  ? const Icon(Icons.category_rounded, color: Colors.cyanAccent, size: 24)
+                  ? const Icon(Icons.category_rounded, color: const Color(0xFFF97316), size: 24)
                   : null,
             ),
             title: Text(
@@ -400,7 +402,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 const SizedBox(width: 8),
                 Text(
                   '$subCount subcategories',
-                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                  style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 12),
                 ),
               ],
             ),
@@ -410,12 +412,12 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
               children: [
                 Switch(
                   value: isActive,
-                  activeColor: Colors.cyanAccent,
-                  inactiveTrackColor: Colors.white10,
+                  activeColor: const Color(0xFFF97316),
+                  inactiveTrackColor: const Color(0xFFE2E8F0),
                   onChanged: (val) => _toggleCategoryStatus(category, val),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, color: Colors.white70),
+                  icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
                   onPressed: () async {
                     // Fetch full category details (with subs) before navigating to form
                     setState(() {
@@ -454,14 +456,14 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
               ],
             ),
             children: [
-              const Divider(color: Colors.white12, height: 1),
+              const Divider(color: const Color(0xFFE2E8F0), height: 1),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
                     'Subcategories:',
-                    style: TextStyle(color: Colors.cyanAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: const Color(0xFFF97316), fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   TextButton.icon(
                     onPressed: () async {
@@ -498,10 +500,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                         });
                       }
                     },
-                    icon: const Icon(Icons.add, size: 16, color: Colors.cyanAccent),
+                    icon: const Icon(Icons.add, size: 16, color: const Color(0xFFF97316)),
                     label: const Text(
                       'Manage Subs',
-                      style: TextStyle(color: Colors.cyanAccent, fontSize: 12),
+                      style: TextStyle(color: const Color(0xFFF97316), fontSize: 12),
                     ),
                   ),
                 ],
@@ -511,7 +513,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 24.0),
                   child: Center(
-                    child: CircularProgressIndicator(color: Colors.cyanAccent, strokeWidth: 2),
+                    child: CircularProgressIndicator(color: const Color(0xFFF97316), strokeWidth: 2),
                   ),
                 )
               else
@@ -520,7 +522,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Text(
                           'No subcategories added yet.',
-                          style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13, fontStyle: FontStyle.italic),
+                          style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3), fontSize: 13, fontStyle: FontStyle.italic),
                         ),
                       )
                     : ListView.builder(
@@ -538,20 +540,20 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                             margin: const EdgeInsets.only(bottom: 8.0),
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.02),
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.white.withOpacity(0.04)),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
                             ),
                             child: Row(
                               children: [
                                 CircleAvatar(
                                   radius: 18,
-                                  backgroundColor: Colors.white.withOpacity(0.06),
+                                  backgroundColor: Colors.white,
                                   backgroundImage: subImage != null && subImage.isNotEmpty
                                       ? NetworkImage(_resolveSubcategoryImageUrl(subImage))
                                       : null,
                                   child: subImage == null || subImage.isEmpty
-                                      ? const Icon(Icons.subdirectory_arrow_right, color: Colors.cyanAccent, size: 16)
+                                      ? const Icon(Icons.subdirectory_arrow_right, color: const Color(0xFFF97316), size: 16)
                                       : null,
                                 ),
                                 const SizedBox(width: 12),

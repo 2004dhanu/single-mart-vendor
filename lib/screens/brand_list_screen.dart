@@ -163,16 +163,18 @@ class _BrandListScreenState extends State<BrandListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Brands Management',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle, color: Colors.cyanAccent, size: 28),
+            icon: const Icon(Icons.add_circle, color: const Color(0xFFF97316), size: 28),
             tooltip: 'Add Brand',
             onPressed: () async {
               final result = await Navigator.push(
@@ -194,20 +196,20 @@ class _BrandListScreenState extends State<BrandListScreen> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
                 hintText: 'Search brands...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.04),
+                fillColor: Colors.white,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.cyanAccent),
+                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
                 ),
               ),
             ),
@@ -216,13 +218,13 @@ class _BrandListScreenState extends State<BrandListScreen> {
           // Main List / Loader
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
                 : _filteredBrands.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.branding_watermark_outlined, color: Colors.white24, size: 64),
+                            const Icon(Icons.branding_watermark_outlined, color: const Color(0xFFCBD5E1), size: 64),
                             const SizedBox(height: 16),
                             const Text(
                               'No brands found',
@@ -233,7 +235,7 @@ class _BrandListScreenState extends State<BrandListScreen> {
                       )
                     : RefreshIndicator(
                         onRefresh: _loadBrands,
-                        color: Colors.cyanAccent,
+                        color: const Color(0xFFF97316),
                         backgroundColor: const Color(0xFF1E293B),
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -259,20 +261,20 @@ class _BrandListScreenState extends State<BrandListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
           radius: 24,
-          backgroundColor: Colors.white.withOpacity(0.08),
+          backgroundColor: Colors.white,
           backgroundImage: imagePath != null && imagePath.isNotEmpty
               ? NetworkImage(_resolveBrandImageUrl(imagePath))
               : null,
           child: imagePath == null || imagePath.isEmpty
-              ? const Icon(Icons.branding_watermark, color: Colors.cyanAccent, size: 24)
+              ? const Icon(Icons.branding_watermark, color: const Color(0xFFF97316), size: 24)
               : null,
         ),
         title: Text(
@@ -308,12 +310,12 @@ class _BrandListScreenState extends State<BrandListScreen> {
           children: [
             Switch(
               value: isActive,
-              activeColor: Colors.cyanAccent,
-              inactiveTrackColor: Colors.white10,
+              activeColor: const Color(0xFFF97316),
+              inactiveTrackColor: const Color(0xFFE2E8F0),
               onChanged: (val) => _toggleBrandStatus(brand, val),
             ),
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: Colors.white70),
+              icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
               onPressed: () async {
                 final result = await Navigator.push(
                   context,

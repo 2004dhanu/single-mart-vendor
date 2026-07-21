@@ -130,18 +130,20 @@ class _AddressListScreenState extends State<AddressListScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1B4B),
-        title: const Text('Delete Address', style: TextStyle(color: Colors.white)),
-        content: const Text('Are you sure you want to delete this address?', style: TextStyle(color: Colors.white70)),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        
+        title: const Text('Delete Address', style: TextStyle(color: const Color(0xFF0F172A))),
+        content: const Text('Are you sure you want to delete this address?', style: TextStyle(color: const Color(0xFF334155))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: const Text('Cancel', style: TextStyle(color: const Color(0xFF475569))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: const Text('Delete', style: TextStyle(color: const Color(0xFF0F172A))),
           ),
         ],
       ),
@@ -206,16 +208,18 @@ class _AddressListScreenState extends State<AddressListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Manage Addresses',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle, color: Colors.cyanAccent, size: 28),
+            icon: const Icon(Icons.add_circle, color: const Color(0xFFF97316), size: 28),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -240,17 +244,17 @@ class _AddressListScreenState extends State<AddressListScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+          ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
           : _addresses.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.location_off_outlined, color: Colors.white.withOpacity(0.2), size: 64),
+                      Icon(Icons.location_off_outlined, color: const Color(0xFF0F172A).withOpacity(0.2), size: 64),
                       const SizedBox(height: 16),
                       const Text(
                         'No addresses saved.',
-                        style: TextStyle(color: Colors.white54, fontSize: 16),
+                        style: TextStyle(color: const Color(0xFF475569), fontSize: 16),
                       ),
                     ],
                   ),
@@ -268,10 +272,10 @@ class _AddressListScreenState extends State<AddressListScreen> {
                       margin: const EdgeInsets.only(bottom: 16.0),
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.04),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDefault ? Colors.cyanAccent.withOpacity(0.4) : Colors.white.withOpacity(0.08),
+                          color: isDefault ? const Color(0xFFF97316).withOpacity(0.4) : Colors.white,
                         ),
                       ),
                       child: Column(
@@ -283,9 +287,9 @@ class _AddressListScreenState extends State<AddressListScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.cyanAccent.withOpacity(0.1),
+                                  color: const Color(0xFFF97316).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
+                                  border: Border.all(color: const Color(0xFFF97316).withOpacity(0.3)),
                                 ),
                                 child: Row(
                                   children: [
@@ -295,14 +299,14 @@ class _AddressListScreenState extends State<AddressListScreen> {
                                           : type.toLowerCase() == 'work'
                                               ? Icons.work_outline
                                               : Icons.storefront_outlined,
-                                      color: Colors.cyanAccent,
+                                      color: const Color(0xFFF97316),
                                       size: 14,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
                                       type.toUpperCase(),
                                       style: const TextStyle(
-                                        color: Colors.cyanAccent,
+                                        color: const Color(0xFFF97316),
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -314,14 +318,14 @@ class _AddressListScreenState extends State<AddressListScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.purpleAccent.withOpacity(0.1),
+                                    color: const Color(0xFFF97316).withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.purpleAccent.withOpacity(0.3)),
+                                    border: Border.all(color: const Color(0xFFF97316).withOpacity(0.3)),
                                   ),
                                   child: const Text(
                                     'DEFAULT',
                                     style: TextStyle(
-                                      color: Colors.purpleAccent,
+                                      color: const Color(0xFFF97316),
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -341,15 +345,15 @@ class _AddressListScreenState extends State<AddressListScreen> {
                               if (!isDefault)
                                 TextButton.icon(
                                   onPressed: () => _setDefaultAddress(index),
-                                  icon: const Icon(Icons.check_circle_outline, color: Colors.purpleAccent, size: 18),
+                                  icon: const Icon(Icons.check_circle_outline, color: const Color(0xFFF97316), size: 18),
                                   label: const Text(
                                     'Set Default',
-                                    style: TextStyle(color: Colors.purpleAccent, fontSize: 13, fontWeight: FontWeight.bold),
+                                    style: TextStyle(color: const Color(0xFFF97316), fontSize: 13, fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               const Spacer(),
                               IconButton(
-                                icon: const Icon(Icons.edit_outlined, color: Colors.white70, size: 20),
+                                icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155), size: 20),
                                 onPressed: () async {
                                   final result = await Navigator.push(
                                     context,

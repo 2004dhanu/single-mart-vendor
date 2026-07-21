@@ -151,16 +151,18 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: Text(
           _isEditMode ? 'Edit Brand' : 'Add Brand',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+          ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -196,8 +198,8 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.cyanAccent,
-                          foregroundColor: const Color(0xFF1E1B4B),
+                          backgroundColor: const Color(0xFFF97316),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -222,7 +224,7 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
       padding: const EdgeInsets.only(left: 4.0, bottom: 12.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.cyanAccent, size: 20),
+          Icon(icon, color: const Color(0xFFF97316), size: 20),
           const SizedBox(width: 8),
           Text(
             title,
@@ -238,9 +240,9 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: children,
@@ -257,20 +259,20 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
     return TextFormField(
       controller: controller,
       validator: validator,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: const Color(0xFF0F172A)),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.4), size: 20),
+        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+        prefixIcon: Icon(icon, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.02),
+        fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+          borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
         ),
       ),
     );
@@ -279,21 +281,21 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
   Widget _buildStatusDropdown() {
     return DropdownButtonFormField<String>(
       value: _status,
-      dropdownColor: const Color(0xFF1E1B4B),
-      style: const TextStyle(color: Colors.white),
+      dropdownColor: Colors.white,
+      style: const TextStyle(color: const Color(0xFF0F172A)),
       decoration: InputDecoration(
         labelText: 'Brand Status',
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-        prefixIcon: Icon(Icons.info_outline, color: Colors.white.withOpacity(0.4), size: 20),
+        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+        prefixIcon: Icon(Icons.info_outline, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.02),
+        fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+          borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
         ),
       ),
       items: ['Active', 'Inactive']
@@ -323,7 +325,7 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+          style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 13),
         ),
         const SizedBox(height: 8),
         InkWell(
@@ -333,10 +335,10 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
             height: 120,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: (hasLocal || hasRemote) ? Colors.cyanAccent.withOpacity(0.5) : Colors.white10,
+                color: (hasLocal || hasRemote) ? const Color(0xFFF97316).withOpacity(0.5) : const Color(0xFFE2E8F0),
                 width: 1,
               ),
             ),
@@ -353,11 +355,11 @@ class _BrandFormScreenState extends State<BrandFormScreen> {
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.image_outlined, color: Colors.white.withOpacity(0.3), size: 36),
+                          Icon(Icons.image_outlined, color: const Color(0xFF0F172A).withOpacity(0.3), size: 36),
                           const SizedBox(height: 6),
                           Text(
                             'Upload image',
-                            style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                            style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 12),
                           ),
                         ],
                       ),
