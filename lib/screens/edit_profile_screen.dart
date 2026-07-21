@@ -134,8 +134,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Colors.cyanAccent,
-              onPrimary: Color(0xFF0F172A),
+              primary: const Color(0xFFF97316),
+              onPrimary: Color(0xFFF8FAFC),
               surface: Color(0xFF1E293B),
               onSurface: Colors.white,
             ),
@@ -198,7 +198,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
+          style: const TextStyle(color: const Color(0xFF334155), fontSize: 14, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         InkWell(
@@ -208,9 +208,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             height: 160,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.04),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: hasLocal
                 ? ClipRRect(
@@ -221,7 +221,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Image.file(localFile, fit: BoxFit.cover),
                         Container(color: Colors.black38),
                         const Center(
-                          child: Icon(Icons.change_circle_rounded, color: Colors.cyanAccent, size: 40),
+                          child: Icon(Icons.change_circle_rounded, color: const Color(0xFFF97316), size: 40),
                         ),
                       ],
                     ),
@@ -241,7 +241,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                             Container(color: Colors.black38),
                             const Center(
-                              child: Icon(Icons.change_circle_rounded, color: Colors.cyanAccent, size: 40),
+                              child: Icon(Icons.change_circle_rounded, color: const Color(0xFFF97316), size: 40),
                             ),
                           ],
                         ),
@@ -250,9 +250,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_photo_alternate_rounded, color: Colors.white30, size: 40),
+                            Icon(Icons.add_photo_alternate_rounded, color: const Color(0xFFCBD5E1), size: 40),
                             SizedBox(height: 8),
-                            Text('Click to upload image', style: TextStyle(color: Colors.white30, fontSize: 12)),
+                            Text('Click to upload image', style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 12)),
                           ],
                         ),
                       ),
@@ -393,12 +393,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text('Edit Profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: const Color(0xFF0F172A)),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -439,15 +441,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           dropdownColor: const Color(0xFF1E293B),
                           decoration: InputDecoration(
                             labelText: 'Gender',
-                            labelStyle: const TextStyle(color: Colors.cyanAccent),
-                            prefixIcon: const Icon(Icons.wc_outlined, color: Colors.cyanAccent),
+                            labelStyle: const TextStyle(color: const Color(0xFFF97316)),
+                            prefixIcon: const Icon(Icons.wc_outlined, color: const Color(0xFFF97316)),
                             filled: true,
-                            fillColor: Colors.white.withOpacity(0.04),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.cyanAccent)),
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0))),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0))),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFF97316))),
                           ),
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: const Color(0xFF0F172A)),
                           items: ['Male', 'Female', 'Other'].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
                           onChanged: (val) {
                             if (val != null) {
@@ -496,15 +498,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     dropdownColor: const Color(0xFF1E293B),
                     decoration: InputDecoration(
                       labelText: 'Address Type',
-                      labelStyle: const TextStyle(color: Colors.cyanAccent),
-                      prefixIcon: const Icon(Icons.home_work_outlined, color: Colors.cyanAccent),
+                      labelStyle: const TextStyle(color: const Color(0xFFF97316)),
+                      prefixIcon: const Icon(Icons.home_work_outlined, color: const Color(0xFFF97316)),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.04),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.cyanAccent)),
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0))),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFF97316))),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: const Color(0xFF0F172A)),
                     items: ['Work', 'Home', 'Warehouse', 'Other'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
                     onChanged: (val) {
                       if (val != null) {
@@ -533,8 +535,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _updateProfile,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyanAccent,
-                        foregroundColor: const Color(0xFF0F172A),
+                        backgroundColor: const Color(0xFFF97316),
+                        foregroundColor: const Color(0xFFF8FAFC),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 4,
                       ),
@@ -556,7 +558,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.cyanAccent),
+                    CircularProgressIndicator(color: const Color(0xFFF97316)),
                     SizedBox(height: 16),
                     Text('Updating profile details...', style: TextStyle(color: Colors.white, fontSize: 16)),
                   ],
@@ -574,10 +576,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(color: Colors.cyanAccent, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          style: const TextStyle(color: const Color(0xFFF97316), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
         ),
         const SizedBox(height: 4),
-        Container(width: 40, height: 3, decoration: BoxDecoration(color: Colors.cyanAccent, borderRadius: BorderRadius.circular(2))),
+        Container(width: 40, height: 3, decoration: BoxDecoration(color: const Color(0xFFF97316), borderRadius: BorderRadius.circular(2))),
       ],
     );
   }
@@ -598,14 +600,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       style: TextStyle(color: enabled ? Colors.white : Colors.white60),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.cyanAccent),
-        prefixIcon: Icon(icon, color: Colors.cyanAccent),
+        labelStyle: const TextStyle(color: const Color(0xFFF97316)),
+        prefixIcon: Icon(icon, color: const Color(0xFFF97316)),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.04),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.cyanAccent)),
-        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white24)),
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFE2E8F0))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFF97316))),
+        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: const Color(0xFFCBD5E1))),
       ),
       validator: (val) {
         if (val == null || val.trim().isEmpty) {

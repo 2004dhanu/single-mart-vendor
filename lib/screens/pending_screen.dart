@@ -122,7 +122,7 @@ class _PendingScreenState extends State<PendingScreen> {
     final displayName = _userDetails?['owner_name'] ?? _userDetails?['name'] ?? 'Vendor';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
@@ -176,7 +176,7 @@ class _PendingScreenState extends State<PendingScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.7),
+                    color: const Color(0xFF0F172A).withOpacity(0.7),
                     height: 1.5,
                   ),
                 ),
@@ -188,8 +188,8 @@ class _PendingScreenState extends State<PendingScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyanAccent,
-                    foregroundColor: const Color(0xFF1E1B4B),
+                    backgroundColor: const Color(0xFFF97316),
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -201,7 +201,7 @@ class _PendingScreenState extends State<PendingScreen> {
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1B4B)),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Row(

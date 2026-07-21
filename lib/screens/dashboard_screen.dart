@@ -8,6 +8,7 @@ import 'brand_list_screen.dart';
 import 'product_list_screen.dart';
 import 'address_list_screen.dart';
 import 'vendor_order_list_screen.dart';
+import 'attribute_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -33,6 +34,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _completedOrdersCount = 0;
   int _todayOrdersCount = 0;
   int _totalProductsCount = 0;
+
+  // Color System
+  static const Color primaryColor = Color(0xFFF97316); // orange-500
+  static const Color primaryDark = Color(0xFFEA580C);  // orange-600
+  static const Color accentColor = Color(0xFFFFF7ED); // orange-50
+  static const Color bgColor = Color(0xFFF8FAFC);     // slate-50
+  static const Color cardColor = Colors.white;
+  static const Color textPrimary = Color(0xFF0F172A);  // slate-900
+  static const Color textSecondary = Color(0xFF475569); // slate-600
+  static const Color borderColor = Color(0xFFE2E8F0);  // slate-200
 
   @override
   void initState() {
@@ -92,7 +103,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final orderStatus = item['order_status']?.toString().toLowerCase() ?? '';
         final paymentStatus = item['payment_status']?.toString().toLowerCase() ?? '';
 
-        // Calculate sales only when payment status is "received"
         if (paymentStatus == 'received') {
           _totalSales += amount;
         }
@@ -228,17 +238,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final addresses = _userDetails?['addresses'] as List<dynamic>?;
 
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         title: Text(
           _currentIndex == 0 ? 'Vendor Dashboard' : 'My Profile',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
         ),
+        iconTheme: const IconThemeData(color: textPrimary),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.cyanAccent),
+            icon: const Icon(Icons.refresh, color: primaryColor),
             tooltip: 'Refresh Data',
             onPressed: _loadUserDetails,
           ),
@@ -247,27 +262,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
             tooltip: 'Logout',
             onPressed: _logout,
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: _isLoading && _userDetails == null
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+          ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : RefreshIndicator(
               onRefresh: _loadUserDetails,
-              color: Colors.cyanAccent,
-              backgroundColor: const Color(0xFF1E293B),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20.0),
-                child: _currentIndex == 0
-                    ? _buildDashboardTab(name, ownerName, position, mobile, email, upi, gst, pan, avatarPath)
-                    : _buildProfileTab(name, ownerName, position, mobile, email, gender, dob, upi, gst, pan, addresses, avatarPath, qrPath, docPath),
+              color: primaryColor,
+              backgroundColor: Colors.white,
+              child: Center(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: isDesktop ? 1200 : double.infinity),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: _currentIndex == 0
+                        ? _buildDashboardTab(name, ownerName, position, mobile, email, upi, gst, pan, avatarPath, width)
+                        : _buildProfileTab(name, ownerName, position, mobile, email, gender, dob, upi, gst, pan, addresses, avatarPath, qrPath, docPath, width),
+                  ),
+                ),
               ),
             ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        backgroundColor: const Color(0xFF1E1B4B),
-        selectedItemColor: Colors.cyanAccent,
-        unselectedItemColor: Colors.white60,
+        backgroundColor: Colors.white,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: textSecondary.withOpacity(0.6),
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontSize: 11),
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
@@ -278,12 +301,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
+            activeIcon: Icon(Icons.dashboard, color: primaryColor),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline_rounded),
-            activeIcon: Icon(Icons.person_rounded),
+            activeIcon: Icon(Icons.person_rounded, color: primaryColor),
             label: 'My Profile',
           ),
         ],
@@ -301,39 +324,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String gst,
     String pan,
     String? avatarPath,
+    double screenWidth,
   ) {
+    final statsCrossAxisCount = screenWidth > 1200 ? 6 : (screenWidth > 700 ? 3 : 2);
+    final actionCrossAxisCount = screenWidth > 900 ? 3 : (screenWidth > 600 ? 2 : 1);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Vendor Profile Header Card
+        // Profile Card Header (Light Orange Gradient)
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF311B92), Color(0xFF1A237E)],
+              colors: [Color(0xFFFFF7ED), Color(0xFFFFE4E6)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFFFEDD5)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 10,
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 36,
-                backgroundColor: Colors.cyanAccent.withOpacity(0.2),
-                backgroundImage: avatarPath != null && avatarPath.isNotEmpty
-                    ? NetworkImage(resolveImageUrl(avatarPath))
-                    : null,
-                child: avatarPath == null || avatarPath.isEmpty
-                    ? const Icon(Icons.storefront_rounded, size: 40, color: Colors.cyanAccent)
-                    : null,
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: primaryColor, width: 2),
+                ),
+                child: CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Colors.white,
+                  backgroundImage: avatarPath != null && avatarPath.isNotEmpty
+                      ? NetworkImage(resolveImageUrl(avatarPath))
+                      : null,
+                  child: avatarPath == null || avatarPath.isEmpty
+                      ? const Icon(Icons.storefront_rounded, size: 36, color: primaryColor)
+                      : null,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -342,23 +376,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Owner: $ownerName',
-                      style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                      style: const TextStyle(color: textSecondary, fontSize: 13),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.cyanAccent,
-                        borderRadius: BorderRadius.circular(4),
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         position.toUpperCase(),
-                        style: const TextStyle(color: Color(0xFF1E1B4B), fontSize: 10, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -369,21 +403,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Statistics Header & Date Range Picker
+        // Statistics Header & Date Picker Row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'Sales Performance',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              'Sales & Statistics',
+              style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            IconButton(
-              icon: Icon(
-                _selectedDateRange == null ? Icons.calendar_today_rounded : Icons.calendar_month_rounded,
-                color: Colors.cyanAccent,
-                size: 20,
-              ),
-              tooltip: 'Filter by Date Range',
+            TextButton.icon(
               onPressed: () async {
                 final range = await showDateRangePicker(
                   context: context,
@@ -392,12 +420,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   initialDateRange: _selectedDateRange,
                   builder: (context, child) {
                     return Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: const ColorScheme.dark(
-                          primary: Colors.cyanAccent,
-                          onPrimary: Colors.black,
-                          surface: Color(0xFF1E1B4B),
-                          onSurface: Colors.white,
+                      data: ThemeData.light().copyWith(
+                        colorScheme: const ColorScheme.light(
+                          primary: primaryColor,
+                          onPrimary: Colors.white,
+                          onSurface: textPrimary,
                         ),
                       ),
                       child: child!,
@@ -411,142 +438,116 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   });
                 }
               },
+              icon: const Icon(Icons.calendar_month_rounded, color: primaryColor, size: 18),
+              label: Text(
+                _selectedDateRange == null
+                    ? 'All Time'
+                    : '${_formatDate(_selectedDateRange!.start)} - ${_formatDate(_selectedDateRange!.end)}',
+                style: const TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 12),
+              ),
             ),
           ],
         ),
-        if (_selectedDateRange != null) ...[
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.cyanAccent.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.cyanAccent.withOpacity(0.15)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.date_range, color: Colors.cyanAccent, size: 14),
-                const SizedBox(width: 8),
-                Text(
-                  'Filtered: ${_formatDate(_selectedDateRange!.start)} - ${_formatDate(_selectedDateRange!.end)}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedDateRange = null;
-                      _calculateStats();
-                    });
-                  },
-                  child: const Text(
-                    'Clear',
-                    style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
         const SizedBox(height: 12),
 
-        // Statistics Grid
+        // Stats Cards Grid
         GridView.count(
+          crossAxisCount: statsCrossAxisCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          childAspectRatio: 1.5,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.4,
           children: [
-            _buildStatCard('Total Sales', '₹${_totalSales.toStringAsFixed(2)}', Icons.currency_rupee, Colors.greenAccent),
-            _buildStatCard('Total Orders', '$_totalOrdersCount', Icons.shopping_bag_outlined, Colors.blueAccent),
-            _buildStatCard('Pending Orders', '$_pendingOrdersCount', Icons.pending_actions_rounded, Colors.orangeAccent),
-            _buildStatCard('Completed Orders', '$_completedOrdersCount', Icons.task_alt_rounded, Colors.cyanAccent),
-            _buildStatCard('Today\'s Orders', '$_todayOrdersCount', Icons.today_rounded, Colors.purpleAccent),
-            _buildStatCard('Total Products', '$_totalProductsCount', Icons.inventory_2_outlined, Colors.amberAccent),
+            _buildStatCard('Total Sales', '₹${_totalSales.toStringAsFixed(2)}', Icons.payments_outlined, Colors.green),
+            _buildStatCard('Total Orders', '$_totalOrdersCount', Icons.shopping_bag_outlined, Colors.blue),
+            _buildStatCard('Pending Orders', '$_pendingOrdersCount', Icons.pending_actions_outlined, Colors.orange),
+            _buildStatCard('Completed Orders', '$_completedOrdersCount', Icons.task_alt_outlined, Colors.teal),
+            _buildStatCard('Today\'s Orders', '$_todayOrdersCount', Icons.today_outlined, Colors.pink),
+            _buildStatCard('Total Products', '$_totalProductsCount', Icons.inventory_2_outlined, Colors.purple),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 28),
 
-        // Store Management Header
+        // Store Management Section
         const Text(
-          'Store Management',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          'Store Operations',
+          style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
 
-        // Quick Actions Card
-        _buildActionCard(
-          title: 'Manage Categories & Subs',
-          subtitle: 'Add/edit categories and manage subcategories',
-          icon: Icons.category_rounded,
-          color: Colors.cyanAccent,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CategoryListScreen()),
-            );
-          },
+        // Quick Actions Grid
+        GridView.count(
+          crossAxisCount: actionCrossAxisCount,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: screenWidth > 900 ? 2.5 : 3.0,
+          children: [
+            _buildActionCard(
+              title: 'Manage Categories',
+              subtitle: 'Add/edit categories and subs',
+              icon: Icons.category_outlined,
+              color: Colors.cyan,
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryListScreen()));
+              },
+            ),
+            _buildActionCard(
+              title: 'Manage Brands',
+              subtitle: 'Manage your active brands',
+              icon: Icons.branding_watermark_outlined,
+              color: Colors.indigo,
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const BrandListScreen()));
+              },
+            ),
+            _buildActionCard(
+              title: 'Manage Products',
+              subtitle: 'View and upload products',
+              icon: Icons.inventory_2_outlined,
+              color: primaryColor,
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductListScreen()));
+              },
+            ),
+            _buildActionCard(
+              title: 'Manage Orders',
+              subtitle: 'Fulfill customer vendor orders',
+              icon: Icons.assignment_outlined,
+              color: Colors.teal,
+              onTap: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorOrderListScreen()));
+                _loadUserDetails();
+              },
+            ),
+            _buildActionCard(
+              title: 'Manage Attributes',
+              subtitle: 'Customize product properties',
+              icon: Icons.tune_rounded,
+              color: Colors.blueGrey,
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AttributeListScreen()));
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 28),
 
-        _buildActionCard(
-          title: 'Manage Brands',
-          subtitle: 'Add, edit, view & toggle status of brands',
-          icon: Icons.branding_watermark_rounded,
-          color: Colors.purpleAccent,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const BrandListScreen()),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-
-        _buildActionCard(
-          title: 'Manage Products',
-          subtitle: 'Add, edit, view & manage store products',
-          icon: Icons.inventory_2_rounded,
-          color: Colors.orangeAccent,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProductListScreen()),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-
-        _buildActionCard(
-          title: 'Manage Orders',
-          subtitle: 'View customer orders, update payment and status',
-          icon: Icons.shopping_bag_rounded,
-          color: Colors.greenAccent,
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const VendorOrderListScreen()),
-            );
-            _loadUserDetails();
-          },
-        ),
-        const SizedBox(height: 24),
-
-        // Business Information
+        // Business Information Overview
         const Text(
-          'Business Overview',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          'Business Details',
+          style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
 
         _buildDetailCard([
           _buildDetailRow('Mobile Number', mobile, Icons.phone_android),
           _buildDetailRow('Email Address', email, Icons.email_outlined),
-          _buildDetailRow('UPI ID', upi, Icons.payment),
-          _buildDetailRow('GST Number', gst, Icons.receipt_long),
-          _buildDetailRow('PAN Number', pan, Icons.credit_card),
+          _buildDetailRow('UPI ID', upi, Icons.payment_outlined),
+          _buildDetailRow('GST Number', gst, Icons.receipt_long_outlined),
+          _buildDetailRow('PAN Number', pan, Icons.credit_card_outlined),
         ]),
         const SizedBox(height: 24),
       ],
@@ -568,69 +569,72 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String? avatarPath,
     String? qrPath,
     String? docPath,
+    double screenWidth,
   ) {
+    final bool isWide = screenWidth > 800;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Profile Header Details
+        // Profile Info Header
         Center(
           child: Column(
             children: [
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.cyanAccent, width: 3),
+                  border: Border.all(color: primaryColor, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.cyanAccent.withOpacity(0.2),
-                      blurRadius: 16,
+                      color: primaryColor.withOpacity(0.15),
+                      blurRadius: 12,
                       spreadRadius: 2,
                     ),
                   ],
                 ),
                 child: CircleAvatar(
                   radius: 54,
-                  backgroundColor: Colors.white10,
+                  backgroundColor: Colors.white,
                   backgroundImage: avatarPath != null && avatarPath.isNotEmpty
                       ? NetworkImage(resolveImageUrl(avatarPath))
                       : null,
                   child: avatarPath == null || avatarPath.isEmpty
-                      ? const Icon(Icons.person, size: 60, color: Colors.cyanAccent)
+                      ? const Icon(Icons.person, size: 54, color: primaryColor)
                       : null,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
                 name,
-                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: textPrimary, fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
                 ownerName,
-                style: const TextStyle(color: Colors.white70, fontSize: 15),
+                style: const TextStyle(color: textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  border: Border.all(color: Colors.white12),
+                  color: accentColor,
+                  border: Border.all(color: const Color(0xFFFFEDD5)),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   position,
-                  style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.w600),
+                  style: const TextStyle(color: primaryColor, fontSize: 11, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
 
         // Edit Profile Button
         SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 46,
           child: OutlinedButton.icon(
             onPressed: () async {
               if (_userDetails != null) {
@@ -644,105 +648,175 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }
               }
             },
-            icon: const Icon(Icons.edit_rounded, color: Colors.cyanAccent, size: 18),
+            icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 16),
             label: const Text(
               'Edit Profile Settings',
-              style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
+              style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 14),
             ),
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.cyanAccent),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              side: const BorderSide(color: primaryColor),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: Colors.white,
             ),
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 28),
 
-        // Section: Personal
-        _buildProfileSectionHeader('Personal details'),
-        const SizedBox(height: 12),
-        _buildDetailCard([
-          _buildDetailRow('Mobile Number', mobile, Icons.phone_android),
-          _buildDetailRow('Email Address', email, Icons.email_outlined),
-          _buildDetailRow('Gender', gender, Icons.wc_outlined),
-          _buildDetailRow('Date of Birth', dob, Icons.calendar_month_outlined),
-        ]),
-        const SizedBox(height: 24),
-
-        // Section: Business
-        _buildProfileSectionHeader('Business details'),
-        const SizedBox(height: 12),
-        _buildDetailCard([
-          _buildDetailRow('UPI ID', upi, Icons.payment),
-          _buildDetailRow('GST Number', gst, Icons.receipt_long),
-          _buildDetailRow('PAN Number', pan, Icons.credit_card),
-        ]),
-        const SizedBox(height: 24),
-
-        // Section: Address
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(child: _buildProfileSectionHeader('Address details')),
-            TextButton.icon(
-              onPressed: () async {
-                if (_userDetails != null) {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AddressListScreen(userDetails: _userDetails!),
+        // Sections Layout (Grid on desktop, vertical on mobile)
+        isWide
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _buildProfileSectionHeader('Personal details'),
+                        const SizedBox(height: 12),
+                        _buildDetailCard([
+                          _buildDetailRow('Mobile Number', mobile, Icons.phone_android_outlined),
+                          _buildDetailRow('Email Address', email, Icons.email_outlined),
+                          _buildDetailRow('Gender', gender, Icons.wc_outlined),
+                          _buildDetailRow('Date of Birth', dob, Icons.calendar_month_outlined),
+                        ]),
+                        const SizedBox(height: 24),
+                        _buildProfileSectionHeader('Business credentials'),
+                        const SizedBox(height: 12),
+                        _buildDetailCard([
+                          _buildDetailRow('UPI ID', upi, Icons.payment_outlined),
+                          _buildDetailRow('GST Number', gst, Icons.receipt_long_outlined),
+                          _buildDetailRow('PAN Number', pan, Icons.credit_card_outlined),
+                        ]),
+                      ],
                     ),
-                  );
-                  _loadUserDetails();
-                }
-              },
-              icon: const Icon(Icons.settings, color: Colors.cyanAccent, size: 14),
-              label: const Text('Manage', style: TextStyle(color: Colors.cyanAccent, fontSize: 13, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (addresses == null || addresses.isEmpty)
-          _buildDetailCard([
-            _buildDetailRow('Complete Address', 'N/A', Icons.location_on_outlined),
-          ])
-        else
-          ...addresses.map((addr) {
-            final isDefault = (addr['is_default'] == 1 || addr['is_default'] == '1');
-            final type = addr['address_type']?.toString() ?? 'Shop';
-            final parts = [
-              addr['address_line_1'],
-              addr['address_line_2'],
-              addr['landmark'],
-              addr['city'],
-              addr['district'],
-              addr['state'],
-              addr['country'],
-              addr['pincode'],
-            ].where((p) => p != null && p.toString().trim().isNotEmpty).toList();
-            final text = parts.isEmpty ? 'N/A' : parts.join(', ');
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: _buildDetailCard([
-                _buildDetailRow(
-                  '${type.toUpperCase()}${isDefault ? ' (DEFAULT)' : ''}',
-                  text,
-                  isDefault ? Icons.stars : Icons.location_on_outlined,
-                  valueColor: isDefault ? Colors.cyanAccent : Colors.white70,
-                ),
-              ]),
-            );
-          }),
-        const SizedBox(height: 24),
-
-        // Section: Documents
-        _buildProfileSectionHeader('Verification Documents'),
-        const SizedBox(height: 16),
-        _buildDocumentPreview('Payment QR Code', qrPath),
-        const SizedBox(height: 16),
-        _buildDocumentPreview('Business Registration Document', docPath),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: _buildProfileSectionHeader('Address locations')),
+                            TextButton.icon(
+                              onPressed: () async {
+                                if (_userDetails != null) {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => AddressListScreen(userDetails: _userDetails!),
+                                    ),
+                                  );
+                                  _loadUserDetails();
+                                }
+                              },
+                              icon: const Icon(Icons.settings_outlined, color: primaryColor, size: 14),
+                              label: const Text('Manage', style: TextStyle(color: primaryColor, fontSize: 13, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAddressList(addresses),
+                        const SizedBox(height: 24),
+                        _buildProfileSectionHeader('Uploaded Certificates'),
+                        const SizedBox(height: 16),
+                        _buildDocumentPreview('Payment QR Code', qrPath),
+                        const SizedBox(height: 16),
+                        _buildDocumentPreview('Business Registration', docPath),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileSectionHeader('Personal details'),
+                  const SizedBox(height: 12),
+                  _buildDetailCard([
+                    _buildDetailRow('Mobile Number', mobile, Icons.phone_android_outlined),
+                    _buildDetailRow('Email Address', email, Icons.email_outlined),
+                    _buildDetailRow('Gender', gender, Icons.wc_outlined),
+                    _buildDetailRow('Date of Birth', dob, Icons.calendar_month_outlined),
+                  ]),
+                  const SizedBox(height: 24),
+                  _buildProfileSectionHeader('Business credentials'),
+                  const SizedBox(height: 12),
+                  _buildDetailCard([
+                    _buildDetailRow('UPI ID', upi, Icons.payment_outlined),
+                    _buildDetailRow('GST Number', gst, Icons.receipt_long_outlined),
+                    _buildDetailRow('PAN Number', pan, Icons.credit_card_outlined),
+                  ]),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: _buildProfileSectionHeader('Address locations')),
+                      TextButton.icon(
+                        onPressed: () async {
+                          if (_userDetails != null) {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AddressListScreen(userDetails: _userDetails!),
+                              ),
+                            );
+                            _loadUserDetails();
+                          }
+                        },
+                        icon: const Icon(Icons.settings_outlined, color: primaryColor, size: 14),
+                        label: const Text('Manage', style: TextStyle(color: primaryColor, fontSize: 13, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildAddressList(addresses),
+                  const SizedBox(height: 24),
+                  _buildProfileSectionHeader('Uploaded Certificates'),
+                  const SizedBox(height: 16),
+                  _buildDocumentPreview('Payment QR Code', qrPath),
+                  const SizedBox(height: 16),
+                  _buildDocumentPreview('Business Registration', docPath),
+                ],
+              ),
         const SizedBox(height: 32),
       ],
+    );
+  }
+
+  Widget _buildAddressList(List<dynamic>? addresses) {
+    if (addresses == null || addresses.isEmpty) {
+      return _buildDetailCard([
+        _buildDetailRow('Complete Address', 'N/A', Icons.location_on_outlined),
+      ]);
+    }
+    return Column(
+      children: addresses.map((addr) {
+        final isDefault = (addr['is_default'] == 1 || addr['is_default'] == '1');
+        final type = addr['address_type']?.toString() ?? 'Shop';
+        final parts = [
+          addr['address_line_1'],
+          addr['address_line_2'],
+          addr['landmark'],
+          addr['city'],
+          addr['district'],
+          addr['state'],
+          addr['country'],
+          addr['pincode'],
+        ].where((p) => p != null && p.toString().trim().isNotEmpty).toList();
+        final text = parts.isEmpty ? 'N/A' : parts.join(', ');
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: _buildDetailCard([
+            _buildDetailRow(
+              '${type.toUpperCase()}${isDefault ? ' (DEFAULT)' : ''}',
+              text,
+              isDefault ? Icons.stars_rounded : Icons.location_on_outlined,
+              valueColor: isDefault ? primaryColor : textPrimary,
+            ),
+          ]),
+        );
+      }).toList(),
     );
   }
 
@@ -751,10 +825,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Text(
           title.toUpperCase(),
-          style: const TextStyle(color: Colors.cyanAccent, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+          style: const TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.8),
         ),
-        const SizedBox(width: 12),
-        Expanded(child: Container(height: 1, color: Colors.white.withOpacity(0.08))),
+        const SizedBox(width: 10),
+        Expanded(child: Container(height: 1, color: borderColor)),
       ],
     );
   }
@@ -767,30 +841,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(color: textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           hasImage
               ? ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.white.withOpacity(0.02),
+                        color: bgColor,
                         child: const Center(
-                          child: Icon(Icons.broken_image_rounded, color: Colors.redAccent, size: 40),
+                          child: Icon(Icons.broken_image_rounded, color: Colors.redAccent, size: 36),
                         ),
                       ),
                     ),
@@ -800,10 +881,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   height: 100,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.02),
-                    borderRadius: BorderRadius.circular(12),
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: borderColor.withOpacity(0.5)),
                   ),
-                  child: const Text('No Document Uploaded', style: TextStyle(color: Colors.white24, fontSize: 13)),
+                  child: const Text('No Document Uploaded', style: TextStyle(color: textSecondary, fontSize: 12)),
                 ),
         ],
       ),
@@ -812,11 +894,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -825,16 +914,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 16),
               ),
-              Icon(icon, color: color, size: 20),
+              Expanded(
+                child: Text(
+                  value,
+                  textAlign: TextAlign.end,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: textPrimary, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 8),
           Text(
-            value,
-            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: textSecondary, fontSize: 11, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -843,40 +947,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildDetailCard(List<Widget> rows) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.01),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
-        children: rows.expand((r) => [r, const Divider(color: Colors.white10, height: 16)]).toList()..removeLast(),
+        children: rows.expand((r) => [r, const Divider(color: borderColor, height: 16)]).toList()..removeLast(),
       ),
     );
   }
 
   Widget _buildDetailRow(String label, String value, IconData icon, {Color? valueColor}) {
-    return Row(
-      children: [
-        Icon(icon, color: valueColor ?? Colors.white.withOpacity(0.4), size: 20),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(color: valueColor?.withOpacity(0.7) ?? Colors.white.withOpacity(0.5), fontSize: 11),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value.isEmpty ? 'N/A' : value,
-                style: TextStyle(color: valueColor ?? Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(icon, color: valueColor ?? textSecondary.withOpacity(0.6), size: 18),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(color: textSecondary.withOpacity(0.8), fontSize: 10, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value.isEmpty ? 'N/A' : value,
+                  style: TextStyle(color: valueColor ?? textPrimary, fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -887,45 +1001,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
+    return Material(
+      color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.01),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
               ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
-                  ),
-                ],
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 22),
               ),
-            ),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Color(0x8AFFFFFF), size: 16),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: textPrimary, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: textSecondary, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded, color: textSecondary.withOpacity(0.3), size: 14),
+            ],
+          ),
         ),
       ),
     );

@@ -117,16 +117,18 @@ class _BannerListScreenState extends State<BannerListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Banners Management',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_circle, color: Colors.cyanAccent, size: 28),
+            icon: const Icon(Icons.add_circle, color: const Color(0xFFF97316), size: 28),
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -147,20 +149,20 @@ class _BannerListScreenState extends State<BannerListScreen> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
                 hintText: 'Search banners...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.04),
+                fillColor: Colors.white,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.cyanAccent),
+                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
                 ),
               ),
             ),
@@ -169,13 +171,13 @@ class _BannerListScreenState extends State<BannerListScreen> {
           // Main List / Loader
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
                 : _filteredBanners.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.view_carousel_outlined, color: Colors.white24, size: 64),
+                            const Icon(Icons.view_carousel_outlined, color: const Color(0xFFCBD5E1), size: 64),
                             const SizedBox(height: 16),
                             const Text(
                               'No banners found',
@@ -186,7 +188,7 @@ class _BannerListScreenState extends State<BannerListScreen> {
                       )
                     : RefreshIndicator(
                         onRefresh: _loadBanners,
-                        color: Colors.cyanAccent,
+                        color: const Color(0xFFF97316),
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                           itemCount: _filteredBanners.length,
@@ -202,9 +204,9 @@ class _BannerListScreenState extends State<BannerListScreen> {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 16.0),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.04),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.white.withOpacity(0.08)),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +216,7 @@ class _BannerListScreenState extends State<BannerListScreen> {
                                     height: 140,
                                     width: double.infinity,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.08),
+                                      color: Colors.white,
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(16),
                                         topRight: Radius.circular(16),
@@ -233,7 +235,7 @@ class _BannerListScreenState extends State<BannerListScreen> {
                                             ),
                                           )
                                         : const Center(
-                                            child: Icon(Icons.image_outlined, color: Colors.white30, size: 40),
+                                            child: Icon(Icons.image_outlined, color: const Color(0xFFCBD5E1), size: 40),
                                           ),
                                   ),
                                   
@@ -254,14 +256,14 @@ class _BannerListScreenState extends State<BannerListScreen> {
                                           if (link.isNotEmpty) ...[
                                             Row(
                                               children: [
-                                                const Icon(Icons.link_outlined, color: Colors.cyanAccent, size: 14),
+                                                const Icon(Icons.link_outlined, color: const Color(0xFFF97316), size: 14),
                                                 const SizedBox(width: 4),
                                                 Expanded(
                                                   child: Text(
                                                     link,
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
-                                                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                                                    style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 12),
                                                   ),
                                                 ),
                                               ],
@@ -270,7 +272,7 @@ class _BannerListScreenState extends State<BannerListScreen> {
                                           ],
                                           Text(
                                             'Sort Order: $sort',
-                                            style: const TextStyle(color: Colors.purpleAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(color: const Color(0xFFF97316), fontSize: 12, fontWeight: FontWeight.bold),
                                           ),
                                         ],
                                       ),
@@ -280,12 +282,12 @@ class _BannerListScreenState extends State<BannerListScreen> {
                                       children: [
                                         Switch(
                                           value: isActive,
-                                          activeColor: Colors.cyanAccent,
+                                          activeColor: const Color(0xFFF97316),
                                           inactiveThumbColor: Colors.white54,
                                           onChanged: (val) => _toggleStatus(banner, isActive),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.edit_outlined, color: Colors.white70),
+                                          icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
                                           onPressed: () async {
                                             final result = await Navigator.push(
                                               context,

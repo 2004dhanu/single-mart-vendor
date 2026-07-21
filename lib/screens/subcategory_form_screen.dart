@@ -280,16 +280,18 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: Text(
           _isEditMode ? 'Edit Subcategory' : 'Add Subcategory',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+          ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -300,17 +302,17 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.04),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(0.1)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: Column(
                         children: [
                           // Category Dropdown Selection
                           DropdownButtonFormField<int>(
                             value: _selectedCategoryId,
-                            dropdownColor: const Color(0xFF1E1B4B),
-                            style: const TextStyle(color: Colors.white),
+                            dropdownColor: Colors.white,
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Parent Category', Icons.category_outlined),
                             items: _categories.map((c) {
                               return DropdownMenuItem<int>(
@@ -329,7 +331,7 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
                           // Name Input
                           TextFormField(
                             controller: _nameController,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Subcategory Name', Icons.label_outline),
                             validator: (v) => v!.isEmpty ? 'Subcategory name is required' : null,
                           ),
@@ -338,8 +340,8 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
                           // Status Dropdown
                           DropdownButtonFormField<String>(
                             value: _selectedStatus,
-                            dropdownColor: const Color(0xFF1E1B4B),
-                            style: const TextStyle(color: Colors.white),
+                            dropdownColor: Colors.white,
+                            style: const TextStyle(color: const Color(0xFF0F172A)),
                             decoration: _buildInputDecoration('Status', Icons.check_circle_outline),
                             items: const [
                               DropdownMenuItem(value: 'Active', child: Text('Active')),
@@ -369,12 +371,12 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
                         height: 150,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.02),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: (_imageFile != null || (_isEditMode && widget.sub?.image != null))
-                                ? Colors.cyanAccent.withOpacity(0.5)
-                                : Colors.white10,
+                                ? const Color(0xFFF97316).withOpacity(0.5)
+                                : const Color(0xFFE2E8F0),
                             width: 1,
                           ),
                         ),
@@ -394,11 +396,11 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
                                 : Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.image_outlined, color: Colors.white.withOpacity(0.3), size: 40),
+                                      Icon(Icons.image_outlined, color: const Color(0xFF0F172A).withOpacity(0.3), size: 40),
                                       const SizedBox(height: 8),
                                       Text(
                                         'Select image from gallery',
-                                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13),
+                                        style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 13),
                                       ),
                                     ],
                                   ),
@@ -412,8 +414,8 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.cyanAccent,
-                          foregroundColor: const Color(0xFF1E1B4B),
+                          backgroundColor: const Color(0xFFF97316),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -435,17 +437,17 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
   InputDecoration _buildInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-      prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.4), size: 20),
+      labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+      prefixIcon: Icon(icon, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
       filled: true,
-      fillColor: Colors.white.withOpacity(0.02),
+      fillColor: Colors.white,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.cyanAccent),
+        borderSide: const BorderSide(color: const Color(0xFFF97316)),
       ),
     );
   }

@@ -33,9 +33,9 @@ class _AddressDetailCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8.0),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDefault ? Colors.cyanAccent.withOpacity(0.3) : Colors.white.withOpacity(0.06)),
+        border: Border.all(color: isDefault ? const Color(0xFFF97316).withOpacity(0.3) : Colors.white),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,17 +45,17 @@ class _AddressDetailCard extends StatelessWidget {
             children: [
               Text(
                 type.toUpperCase(),
-                style: const TextStyle(color: Colors.cyanAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: const Color(0xFFF97316), fontSize: 11, fontWeight: FontWeight.bold),
               ),
               if (isDefault)
                 const Text(
                   'DEFAULT',
-                  style: TextStyle(color: Colors.purpleAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: const Color(0xFFF97316), fontSize: 10, fontWeight: FontWeight.bold),
                 ),
             ],
           ),
           const SizedBox(height: 6),
-          Text(addressText, style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.3)),
+          Text(addressText, style: const TextStyle(color: const Color(0xFF334155), fontSize: 13, height: 1.3)),
         ],
       ),
     );
@@ -263,7 +263,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
               future: SessionService.getToken().then((token) => ApiService.fetchVendorById(summary['id'] as int, token!)),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+                  return const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)));
                 }
                 
                 final details = snapshot.data?['data'] as Map<String, dynamic>?;
@@ -305,7 +305,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
           child: Container(
             width: 40,
             height: 5,
-            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: const Color(0xFFCBD5E1), borderRadius: BorderRadius.circular(10)),
           ),
         ),
         const SizedBox(height: 24),
@@ -314,12 +314,12 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
           children: [
             CircleAvatar(
               radius: 36,
-              backgroundColor: Colors.white10,
+              backgroundColor: const Color(0xFFE2E8F0),
               backgroundImage: avatar != null && avatar.isNotEmpty
                   ? NetworkImage('https://agsdemo.in/singlemartapi/public/assets/images/user_images/$avatar')
                   : null,
               child: avatar == null || avatar.isEmpty
-                  ? const Icon(Icons.person, size: 40, color: Colors.cyanAccent)
+                  ? const Icon(Icons.person, size: 40, color: const Color(0xFFF97316))
                   : null,
             ),
             const SizedBox(width: 16),
@@ -329,7 +329,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
                 children: [
                   Text(name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(owner, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                  Text(owner, style: const TextStyle(color: const Color(0xFF334155), fontSize: 14)),
                   const SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -368,7 +368,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
         _buildSectionTitle('Address list'),
         const SizedBox(height: 12),
         if (addresses.isEmpty)
-          const Text('No addresses saved.', style: TextStyle(color: Colors.white38, fontSize: 13))
+          const Text('No addresses saved.', style: TextStyle(color: const Color(0xFF64748B), fontSize: 13))
         else
           ...addresses.map((a) => _AddressDetailCard(addr: a as Map<String, dynamic>)),
         const SizedBox(height: 24),
@@ -387,10 +387,10 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
       children: [
         Text(
           title.toUpperCase(),
-          style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+          style: const TextStyle(color: const Color(0xFFF97316), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.8),
         ),
         const SizedBox(width: 8),
-        Expanded(child: Container(height: 1, color: Colors.white10)),
+        Expanded(child: Container(height: 1, color: const Color(0xFFE2E8F0))),
       ],
     );
   }
@@ -403,7 +403,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
         children: [
           SizedBox(
             width: 130,
-            child: Text(label, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
+            child: Text(label, style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 13)),
           ),
           Expanded(
             child: Text(
@@ -425,15 +425,15 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
+        Text(title, style: const TextStyle(color: const Color(0xFF334155), fontSize: 13, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
           height: 160,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.02),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: hasFile
               ? ClipRRect(
@@ -442,12 +442,12 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
                     imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Center(
-                      child: Text('Document Image Link Offline', style: TextStyle(color: Colors.white30, fontSize: 12)),
+                      child: Text('Document Image Link Offline', style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 12)),
                     ),
                   ),
                 )
               : const Center(
-                  child: Icon(Icons.description_outlined, color: Colors.white24, size: 36),
+                  child: Icon(Icons.description_outlined, color: const Color(0xFFCBD5E1), size: 36),
                 ),
         ),
       ],
@@ -459,7 +459,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
       if (_approvedError != null) {
         return _buildErrorState('Approved List Error', _approvedError!);
       }
-      return const Center(child: Text('No approved vendors found.', style: TextStyle(color: Colors.white54)));
+      return const Center(child: Text('No approved vendors found.', style: TextStyle(color: const Color(0xFF475569))));
     }
 
     return ListView.builder(
@@ -477,16 +477,16 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Row(
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: Colors.blueAccent.withOpacity(0.1),
-                child: const Icon(Icons.storefront, color: Colors.blueAccent, size: 24),
+                backgroundColor: const Color(0xFFF97316).withOpacity(0.1),
+                child: const Icon(Icons.storefront, color: const Color(0xFFF97316), size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -500,7 +500,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
                     const SizedBox(height: 4),
                     Text(
                       'ID: $id | Mobile: $mobile',
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style: const TextStyle(color: const Color(0xFF475569), fontSize: 12),
                     ),
                   ],
                 ),
@@ -525,7 +525,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
                   ),
                   TextButton(
                     onPressed: () => _viewVendorDetails(vendor),
-                    child: const Text('View Profile', style: TextStyle(color: Colors.cyanAccent, fontSize: 12)),
+                    child: const Text('View Profile', style: TextStyle(color: const Color(0xFFF97316), fontSize: 12)),
                   ),
                 ],
               ),
@@ -543,30 +543,30 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.cyanAccent.withOpacity(0.03),
+            color: const Color(0xFFF97316).withOpacity(0.03),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.cyanAccent.withOpacity(0.2)),
+            border: Border.all(color: const Color(0xFFF97316).withOpacity(0.2)),
           ),
           child: Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _directApproveController,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: const Color(0xFF0F172A)),
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     hintText: 'Approve Vendor by ID (e.g. 9)',
-                    hintStyle: TextStyle(color: Colors.white30),
+                    hintStyle: TextStyle(color: const Color(0xFFCBD5E1)),
                     border: InputBorder.none,
                     isDense: true,
                   ),
                 ),
               ),
               _directApproving
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.cyanAccent, strokeWidth: 2))
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: const Color(0xFFF97316), strokeWidth: 2))
                   : ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyanAccent,
+                        backgroundColor: const Color(0xFFF97316),
                         foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -581,7 +581,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
           child: _pendingVendors.isEmpty
               ? (_pendingError != null
                   ? _buildErrorState('Pending List Error', _pendingError!)
-                  : const Center(child: Text('No pending approval requests.', style: TextStyle(color: Colors.white54))))
+                  : const Center(child: Text('No pending approval requests.', style: TextStyle(color: const Color(0xFF475569)))))
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _pendingVendors.length,
@@ -595,9 +595,9 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.03),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(0.06)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: Row(
                         children: [
@@ -618,7 +618,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
                                 const SizedBox(height: 4),
                                 Text(
                                   'ID: $id | Mobile: $mobile',
-                                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                  style: const TextStyle(color: const Color(0xFF475569), fontSize: 12),
                                 ),
                               ],
                             ),
@@ -636,7 +636,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
                               ),
                               TextButton(
                                 onPressed: () => _viewVendorDetails(vendor),
-                                child: const Text('View Profile', style: TextStyle(color: Colors.cyanAccent, fontSize: 11)),
+                                child: const Text('View Profile', style: TextStyle(color: const Color(0xFFF97316), fontSize: 11)),
                               ),
                             ],
                           ),
@@ -673,7 +673,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
               child: Text(
                 error,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white60, fontSize: 12, fontFamily: 'monospace'),
+                style: const TextStyle(color: const Color(0xFF475569), fontSize: 12, fontFamily: 'monospace'),
               ),
             ),
             if (showTracebackMsg) ...[
@@ -709,24 +709,26 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Vendor Registrations',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.cyanAccent),
+            icon: const Icon(Icons.refresh, color: const Color(0xFFF97316)),
             onPressed: _loadVendors,
           ),
           const SizedBox(width: 8),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.cyanAccent,
-          labelColor: Colors.cyanAccent,
+          indicatorColor: const Color(0xFFF97316),
+          labelColor: const Color(0xFFF97316),
           unselectedLabelColor: Colors.white54,
           tabs: const [
             Tab(text: 'Approved'),
@@ -735,7 +737,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+          ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
           : TabBarView(
               controller: _tabController,
               children: [

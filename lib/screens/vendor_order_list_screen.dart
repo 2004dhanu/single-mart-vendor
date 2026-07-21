@@ -173,7 +173,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                   future: SessionService.getToken().then((token) => ApiService.fetchOrderById(summary['id'] as int, token!)),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+                      return const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)));
                     }
                     
                     final fullData = snapshot.data?['data'] as Map<String, dynamic>?;
@@ -196,7 +196,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                           child: Container(
                             width: 40,
                             height: 5,
-                            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10)),
+                            decoration: BoxDecoration(color: const Color(0xFFCBD5E1), borderRadius: BorderRadius.circular(10)),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -215,19 +215,19 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   'Ordered: $date',
-                                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                                  style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 12),
                                 ),
                               ],
                             ),
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.cyanAccent.withOpacity(0.1),
+                                color: const Color(0xFFF97316).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 '₹${_calculateVendorTotal(mySubs).toStringAsFixed(2)}',
-                                style: const TextStyle(color: Colors.cyanAccent, fontSize: 16, fontWeight: FontWeight.bold),
+                                style: const TextStyle(color: const Color(0xFFF97316), fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -260,9 +260,9 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                             margin: const EdgeInsets.only(bottom: 16),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.02),
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white10),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,13 +271,36 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                   prodName,
                                   style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
                                 ),
-                                const SizedBox(height: 8),
+                                if (item['variant_attributes'] != null && (item['variant_attributes'] as List<dynamic>).isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 6,
+                                    children: (item['variant_attributes'] as List<dynamic>).map((attr) {
+                                      final attrName = attr['attribute_name'] ?? '';
+                                      final attrVal = attr['attribute_value'] ?? '';
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF97316).withOpacity(0.08),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: const Color(0xFFF97316).withOpacity(0.2)),
+                                        ),
+                                        child: Text(
+                                          '$attrName: $attrVal',
+                                          style: const TextStyle(color: const Color(0xFFF97316), fontSize: 11, fontWeight: FontWeight.w500),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                                const SizedBox(height: 12),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Quantity: $quantity', style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                                    Text('Price: ₹$price', style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                                    Text('Amount: ₹$amount', style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    Text('Quantity: $quantity', style: const TextStyle(color: const Color(0xFF475569), fontSize: 12)),
+                                    Text('Price: ₹$price', style: const TextStyle(color: const Color(0xFF475569), fontSize: 12)),
+                                    Text('Amount: ₹$amount', style: const TextStyle(color: const Color(0xFFF97316), fontSize: 12, fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                                 if (item['order_payment_utr_no'] != null && item['order_payment_utr_no'].toString().trim().isNotEmpty) ...[
@@ -285,7 +308,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text('UTR Number', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                      const Text('UTR Number', style: TextStyle(color: const Color(0xFF475569), fontSize: 12)),
                                       SelectableText(
                                         item['order_payment_utr_no'].toString(),
                                         style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
@@ -295,7 +318,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                 ],
                                 if (item['order_payment_screenshot'] != null && item['order_payment_screenshot'].toString().trim().isNotEmpty) ...[
                                   const SizedBox(height: 12),
-                                  const Text('Payment Screenshot', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                  const Text('Payment Screenshot', style: TextStyle(color: const Color(0xFF475569), fontSize: 12)),
                                   const SizedBox(height: 6),
                                   GestureDetector(
                                     onTap: () {
@@ -335,7 +358,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                                 child: CircleAvatar(
                                                   backgroundColor: Colors.black54,
                                                   child: IconButton(
-                                                    icon: const Icon(Icons.close, color: Colors.white),
+                                                    icon: const Icon(Icons.close, color: const Color(0xFF0F172A)),
                                                     onPressed: () => Navigator.pop(context),
                                                   ),
                                                 ),
@@ -351,7 +374,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                         height: 120,
                                         width: double.infinity,
                                         decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.white12),
+                                          border: Border.all(color: const Color(0xFFE2E8F0)),
                                         ),
                                         child: Stack(
                                           fit: StackFit.expand,
@@ -363,7 +386,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                                 return Container(
                                                   color: const Color(0xFF1E293B),
                                                   child: const Center(
-                                                    child: Icon(Icons.image_not_supported_rounded, color: Colors.white30, size: 36),
+                                                    child: Icon(Icons.image_not_supported_rounded, color: const Color(0xFFCBD5E1), size: 36),
                                                   ),
                                                 );
                                               },
@@ -374,7 +397,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                                 child: Row(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Icon(Icons.zoom_in, color: Colors.cyanAccent, size: 20),
+                                                    Icon(Icons.zoom_in, color: const Color(0xFFF97316), size: 20),
                                                     SizedBox(width: 6),
                                                     Text(
                                                       'Tap to View Screenshot',
@@ -391,7 +414,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                   ),
                                 ],
                                 const SizedBox(height: 16),
-                                const Divider(color: Colors.white10),
+                                const Divider(color: const Color(0xFFE2E8F0)),
                                 const SizedBox(height: 8),
 
                                 // Status Dropdowns
@@ -402,14 +425,14 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text('ORDER STATUS', style: TextStyle(color: Colors.white30, fontSize: 9, fontWeight: FontWeight.bold)),
+                                          const Text('ORDER STATUS', style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 9, fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 4),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10),
                                             decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.04),
+                                              color: Colors.white,
                                               borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Colors.white10),
+                                              border: Border.all(color: const Color(0xFFE2E8F0)),
                                             ),
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
@@ -417,7 +440,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                                 dropdownColor: const Color(0xFF1E293B),
                                                 style: const TextStyle(color: Colors.white, fontSize: 13),
                                                 isExpanded: true,
-                                                icon: const Icon(Icons.arrow_drop_down, color: Colors.cyanAccent, size: 18),
+                                                icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFFF97316), size: 18),
                                                 items: _orderStatuses.map((String val) {
                                                   return DropdownMenuItem<String>(
                                                     value: val,
@@ -445,14 +468,14 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text('PAYMENT STATUS', style: TextStyle(color: Colors.white30, fontSize: 9, fontWeight: FontWeight.bold)),
+                                          const Text('PAYMENT STATUS', style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 9, fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 4),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10),
                                             decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.04),
+                                              color: Colors.white,
                                               borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Colors.white10),
+                                              border: Border.all(color: const Color(0xFFE2E8F0)),
                                             ),
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
@@ -460,7 +483,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                                 dropdownColor: const Color(0xFF1E293B),
                                                 style: const TextStyle(color: Colors.white, fontSize: 13),
                                                 isExpanded: true,
-                                                icon: const Icon(Icons.arrow_drop_down, color: Colors.purpleAccent, size: 18),
+                                                icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFFF97316), size: 18),
                                                 items: _paymentStatuses.map((String val) {
                                                   return DropdownMenuItem<String>(
                                                     value: val,
@@ -504,10 +527,10 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
       children: [
         Text(
           title.toUpperCase(),
-          style: const TextStyle(color: Colors.cyanAccent, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+          style: const TextStyle(color: const Color(0xFFF97316), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8),
         ),
         const SizedBox(width: 8),
-        Expanded(child: Container(height: 1, color: Colors.white10)),
+        Expanded(child: Container(height: 1, color: const Color(0xFFE2E8F0))),
       ],
     );
   }
@@ -520,12 +543,12 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
         children: [
           SizedBox(
             width: 120,
-            child: Text(label, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
+            child: Text(label, style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 13)),
           ),
           Expanded(
             child: Text(
               value.isEmpty ? 'N/A' : value,
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              style: const TextStyle(color: Color(0xFF0F172A), fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -535,6 +558,9 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
+
     final filtered = _orders.where((ord) {
       final ref = ord['order_ref']?.toString().toLowerCase() ?? '';
       final cust = ord['user_name']?.toString().toLowerCase() ?? '';
@@ -543,133 +569,168 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Customer Orders',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.cyanAccent),
+            icon: const Icon(Icons.refresh, color: Color(0xFFF97316)),
             onPressed: _loadInitialData,
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
-          : Column(
-              children: [
-                // Search Bar
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  color: const Color(0xFF0F172A),
-                  child: TextField(
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val;
-                      });
-                    },
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Search by Order Ref or Customer...',
-                      hintStyle: const TextStyle(color: Colors.white38),
-                      prefixIcon: const Icon(Icons.search, color: Colors.cyanAccent),
-                      fillColor: Colors.white.withOpacity(0.04),
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF97316)))
+          : Center(
+              child: Container(
+                constraints: BoxConstraints(maxWidth: isDesktop ? 1200 : double.infinity),
+                child: Column(
+                  children: [
+                    // Search Bar
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      color: const Color(0xFFF8FAFC),
+                      child: TextField(
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val;
+                          });
+                        },
+                        style: const TextStyle(color: Color(0xFF0F172A)),
+                        decoration: InputDecoration(
+                          hintText: 'Search by Order Ref or Customer...',
+                          hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                          prefixIcon: const Icon(Icons.search, color: Color(0xFFF97316)),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? const Center(child: Text('No orders found.', style: TextStyle(color: Color(0xFF475569))))
+                          : isDesktop
+                              ? GridView.builder(
+                                  padding: const EdgeInsets.all(16),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    childAspectRatio: 2.5,
+                                  ),
+                                  itemCount: filtered.length,
+                                  itemBuilder: (context, index) {
+                                    final ord = filtered[index] as Map<String, dynamic>;
+                                    return _buildOrderCard(ord);
+                                  },
+                                )
+                              : ListView.builder(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  itemCount: filtered.length,
+                                  itemBuilder: (context, index) {
+                                    final ord = filtered[index] as Map<String, dynamic>;
+                                    return _buildOrderCard(ord);
+                                  },
+                                ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
+    );
+  }
 
-                Expanded(
-                  child: filtered.isEmpty
-                      ? const Center(child: Text('No orders found.', style: TextStyle(color: Colors.white54)))
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: filtered.length,
-                          itemBuilder: (context, index) {
-                            final ord = filtered[index] as Map<String, dynamic>;
-                            final ref = ord['order_ref'] ?? 'N/A';
-                            final date = ord['order_date'] ?? 'N/A';
-                            final customer = ord['user_name'] ?? 'N/A';
-                            final subs = ord['subs'] as List<dynamic>? ?? [];
+  Widget _buildOrderCard(Map<String, dynamic> ord) {
+    final ref = ord['order_ref'] ?? 'N/A';
+    final date = ord['order_date'] ?? 'N/A';
+    final customer = ord['user_name'] ?? 'N/A';
+    final subs = ord['subs'] as List<dynamic>? ?? [];
 
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.03),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.white.withOpacity(0.06)),
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 22,
-                                    backgroundColor: Colors.cyanAccent.withOpacity(0.1),
-                                    child: const Icon(Icons.shopping_bag_rounded, color: Colors.cyanAccent, size: 24),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          ref,
-                                          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Customer: $customer',
-                                          style: const TextStyle(color: Colors.white70, fontSize: 13),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'Date: $date | Items: ${subs.length}',
-                                          style: const TextStyle(color: Colors.white38, fontSize: 11),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        '₹${_calculateVendorTotal(subs).toStringAsFixed(2)}',
-                                        style: const TextStyle(color: Colors.greenAccent, fontSize: 15, fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white.withOpacity(0.06),
-                                          foregroundColor: Colors.cyanAccent,
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          minimumSize: Size.zero,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                            side: BorderSide(color: Colors.cyanAccent.withOpacity(0.2)),
-                                          ),
-                                        ),
-                                        onPressed: () => _viewOrderDetails(ord),
-                                        child: const Text('Manage', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: const Color(0xFFF97316).withOpacity(0.1),
+            child: const Icon(Icons.shopping_bag_rounded, color: Color(0xFFF97316), size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  ref,
+                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Customer: $customer',
+                  style: const TextStyle(color: Color(0xFF334155), fontSize: 13),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Date: $date | Items: ${subs.length}',
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                 ),
               ],
             ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '₹${_calculateVendorTotal(subs).toStringAsFixed(2)}',
+                style: const TextStyle(color: Color(0xFF16A34A), fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFFF97316),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  minimumSize: Size.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: const Color(0xFFF97316).withOpacity(0.2)),
+                  ),
+                ),
+                onPressed: () => _viewOrderDetails(ord),
+                child: const Text('Manage', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -231,16 +231,18 @@ files.forEach((k,v){
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B4B),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: Text(
           _isEditMode ? 'Edit Category' : 'Add Category',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+          ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -275,7 +277,7 @@ files.forEach((k,v){
                       children: [
                         _buildSectionHeader('Subcategories', Icons.subdirectory_arrow_right),
                         IconButton(
-                          icon: const Icon(Icons.add_circle, color: Colors.cyanAccent, size: 28),
+                          icon: const Icon(Icons.add_circle, color: const Color(0xFFF97316), size: 28),
                           tooltip: 'Add Subcategory',
                           onPressed: _addSubcategory,
                         ),
@@ -289,7 +291,7 @@ files.forEach((k,v){
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
                             'Click the + button to add a subcategory.',
-                            style: TextStyle(color: Colors.white.withOpacity(0.3), fontStyle: FontStyle.italic),
+                            style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3), fontStyle: FontStyle.italic),
                           ),
                         ),
                       )
@@ -310,8 +312,8 @@ files.forEach((k,v){
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.cyanAccent,
-                          foregroundColor: const Color(0xFF1E1B4B),
+                          backgroundColor: const Color(0xFFF97316),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -336,7 +338,7 @@ files.forEach((k,v){
       padding: const EdgeInsets.only(left: 4.0, bottom: 12.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.cyanAccent, size: 20),
+          Icon(icon, color: const Color(0xFFF97316), size: 20),
           const SizedBox(width: 8),
           Text(
             title,
@@ -352,9 +354,9 @@ files.forEach((k,v){
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: children,
@@ -371,20 +373,20 @@ files.forEach((k,v){
     return TextFormField(
       controller: controller,
       validator: validator,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: const Color(0xFF0F172A)),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.4), size: 20),
+        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+        prefixIcon: Icon(icon, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.02),
+        fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+          borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
         ),
       ),
     );
@@ -393,21 +395,21 @@ files.forEach((k,v){
   Widget _buildStatusDropdown() {
     return DropdownButtonFormField<String>(
       value: _status,
-      dropdownColor: const Color(0xFF1E1B4B),
-      style: const TextStyle(color: Colors.white),
+      dropdownColor: Colors.white,
+      style: const TextStyle(color: const Color(0xFF0F172A)),
       decoration: InputDecoration(
         labelText: 'Category Status',
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-        prefixIcon: Icon(Icons.info_outline, color: Colors.white.withOpacity(0.4), size: 20),
+        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+        prefixIcon: Icon(Icons.info_outline, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.02),
+        fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+          borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
         ),
       ),
       items: ['Active', 'Inactive']
@@ -437,7 +439,7 @@ files.forEach((k,v){
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+          style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 13),
         ),
         const SizedBox(height: 8),
         InkWell(
@@ -447,10 +449,10 @@ files.forEach((k,v){
             height: 120,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: (hasLocal || hasRemote) ? Colors.cyanAccent.withOpacity(0.5) : Colors.white10,
+                color: (hasLocal || hasRemote) ? const Color(0xFFF97316).withOpacity(0.5) : const Color(0xFFE2E8F0),
                 width: 1,
               ),
             ),
@@ -467,11 +469,11 @@ files.forEach((k,v){
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.image_outlined, color: Colors.white.withOpacity(0.3), size: 36),
+                          Icon(Icons.image_outlined, color: const Color(0xFF0F172A).withOpacity(0.3), size: 36),
                           const SizedBox(height: 6),
                           Text(
                             'Upload image',
-                            style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                            style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 12),
                           ),
                         ],
                       ),
@@ -488,9 +490,9 @@ files.forEach((k,v){
       margin: const EdgeInsets.only(bottom :16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,7 +502,7 @@ files.forEach((k,v){
             children: [
               Text(
                 'Subcategory #${index + 1}',
-                style: const TextStyle(color: Colors.cyanAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: const Color(0xFFF97316), fontSize: 14, fontWeight: FontWeight.bold),
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
@@ -519,21 +521,21 @@ files.forEach((k,v){
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: sub.status,
-              dropdownColor: const Color(0xFF1E1B4B),
-              style: const TextStyle(color: Colors.white),
+              dropdownColor: Colors.white,
+              style: const TextStyle(color: const Color(0xFF0F172A)),
               decoration: InputDecoration(
                 labelText: 'Status',
-                labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14),
-                prefixIcon: Icon(Icons.info_outline, color: Colors.white.withOpacity(0.4), size: 20),
+                labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 14),
+                prefixIcon: Icon(Icons.info_outline, color: const Color(0xFF0F172A).withOpacity(0.4), size: 20),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.02),
+                fillColor: Colors.white,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.cyanAccent, width: 1),
+                  borderSide: const BorderSide(color: const Color(0xFFF97316), width: 1),
                 ),
               ),
               items: ['Active', 'Inactive']
