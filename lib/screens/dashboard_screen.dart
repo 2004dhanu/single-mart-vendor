@@ -101,15 +101,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final amount = double.tryParse(amountStr) ?? 0.0;
 
         final orderStatus = item['order_status']?.toString().toLowerCase() ?? '';
-        final paymentStatus = item['payment_status']?.toString().toLowerCase() ?? '';
 
-        if (paymentStatus == 'received') {
+        if (orderStatus != 'cancelled') {
           _totalSales += amount;
         }
 
         if (orderStatus == 'pending') {
           _pendingOrdersCount++;
-        } else if (orderStatus == 'delivered') {
+        } else if (orderStatus == 'confirmed' || orderStatus == 'delivered') {
           _completedOrdersCount++;
         }
       }
@@ -154,8 +153,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final prodResp = await ApiService.fetchProducts(token);
         if (prodResp['code'] == 200 && prodResp['data'] != null) {
           final pList = prodResp['data'] as List<dynamic>;
-          _products = pList;
-          _totalProductsCount = pList.length;
+          _products = pList.where((p) => p['product_vendor_id']?.toString() == currentId.toString()).toList();
+          _totalProductsCount = _products.length;
         }
 
         // Fetch orders count & stats

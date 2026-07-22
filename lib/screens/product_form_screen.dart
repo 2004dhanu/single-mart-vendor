@@ -49,6 +49,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   // Variants state
   bool _hasVariants = false;
   final List<ProductVariantInput> _variants = [];
+  final Set<String> _selectedVariantFilters = {'Attributes'};
+  final Map<int, int?> _tempSelectedAttributeId = {};
+  final Map<int, int?> _tempSelectedValueId = {};
 
   @override
   void initState() {
@@ -100,16 +103,37 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
       // Prefill images
       final imagesList = p['images'] as List<dynamic>? ?? [];
-      for (int i = 0; i < imagesList.length; i++) {
-        final img = imagesList[i];
-        final orderVal = int.tryParse(img['product_images_sort_order']?.toString() ?? '') ?? (i + 1);
-        _images.add(
-          ProductImageInput(
-            id: img['id']?.toString(),
-            remotePath: img['product_images'] as String?,
-            sortOrder: orderVal,
-          ),
-        );
+      if (imagesList.isNotEmpty) {
+        for (int i = 0; i < imagesList.length; i++) {
+          final img = imagesList[i];
+          final orderVal = int.tryParse(img['product_images_sort_order']?.toString() ?? '') ?? (i + 1);
+          _images.add(
+            ProductImageInput(
+              id: img['id']?.toString(),
+              remotePath: img['product_images'] as String?,
+              sortOrder: orderVal,
+            ),
+          );
+        }
+      } else {
+        // Fallback: If product has variants, prefill main images from the first variant's images
+        final variants = p['variants'] as List<dynamic>? ?? [];
+        if (variants.isNotEmpty) {
+          final firstVariant = variants.first;
+          final vImgs = firstVariant['images'] as List<dynamic>? ?? [];
+          for (int i = 0; i < vImgs.length; i++) {
+            final img = vImgs[i];
+            final orderVal = int.tryParse(img['product_variant_images_sort_order']?.toString() ?? '') ?? (i + 1);
+            _images.add(
+              ProductImageInput(
+                id: img['id']?.toString(),
+                remotePath: img['product_variant_images'] as String?,
+                isVariant: true,
+                sortOrder: orderVal,
+              ),
+            );
+          }
+        }
       }
 
       // Prefill variants if any
@@ -292,10 +316,32 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   void _addVariantInput() {
     setState(() {
       final Map<int, int?> attrValues = {};
-      for (var attr in _attributes) {
-        attrValues[attr['id'] as int] = null;
+      if (_variants.isNotEmpty) {
+        // Copy baseline attributes/values from first variant
+        final firstVar = _variants[0];
+        firstVar.selectedAttributeValues.forEach((key, val) {
+          attrValues[key] = val;
+        });
+        
+        final newVar = ProductVariantInput(
+          barcode: firstVar.barcodeController.text,
+          price: firstVar.priceController.text,
+          discountPrice: firstVar.discountPriceController.text,
+          tax: firstVar.taxController.text,
+          quantity: firstVar.quantityController.text,
+          weight: firstVar.weightController.text,
+          length: firstVar.lengthController.text,
+          width: firstVar.widthController.text,
+          height: firstVar.heightController.text,
+          attrValues: attrValues,
+        );
+        _variants.add(newVar);
+      } else {
+        for (var attr in _attributes) {
+          attrValues[attr['id'] as int] = null;
+        }
+        _variants.add(ProductVariantInput(attrValues: attrValues));
       }
-      _variants.add(ProductVariantInput(attrValues: attrValues));
     });
   }
 
@@ -382,16 +428,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       final Map<String, File> files = {};
 
       // Add main images
+      int mainImgIndex = 0;
       for (int i = 0; i < _images.length; i++) {
         final img = _images[i];
-        fields['images[$i][product_images_sort_order]'] = img.sortOrderController.text.trim();
-        fields['images[$i][product_status]'] = 'Active';
+        final hasLocal = img.localFile != null;
+        final hasRemote = img.remotePath != null && img.remotePath!.isNotEmpty;
+        if (!hasLocal && !hasRemote) continue; // Skip completely empty main images
+
+        fields['images[$mainImgIndex][product_images_sort_order]'] = img.sortOrderController.text.trim();
+        fields['images[$mainImgIndex][product_status]'] = 'Active';
         if (img.id != null) {
-          fields['images[$i][id]'] = img.id!;
+          fields['images[$mainImgIndex][id]'] = img.id!;
         }
         if (img.localFile != null) {
-          files['images[$i][product_images]'] = img.localFile!;
+          files['images[$mainImgIndex][product_images]'] = img.localFile!;
         }
+        mainImgIndex++;
       }
 
       // Add variants fields and files
@@ -417,16 +469,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             fields['variants[$i][attribute_value_ids][$j]'] = selectedIds[j]!.toString();
           }
 
+          int varImgIndex = 0;
           for (int j = 0; j < v.images.length; j++) {
             final img = v.images[j];
-            fields['variants[$i][images][$j][product_variant_images_sort_order]'] = img.sortOrderController.text.trim();
-            fields['variants[$i][images][$j][product_variant_status]'] = 'Active';
+            final hasLocal = img.localFile != null;
+            final hasRemote = img.remotePath != null && img.remotePath!.isNotEmpty;
+            if (!hasLocal && !hasRemote) continue; // Skip completely empty variant images
+
+            fields['variants[$i][images][$varImgIndex][product_variant_images_sort_order]'] = img.sortOrderController.text.trim();
+            fields['variants[$i][images][$varImgIndex][product_variant_status]'] = 'Active';
             if (img.id != null) {
-              fields['variants[$i][images][$j][id]'] = img.id!;
+              fields['variants[$i][images][$varImgIndex][id]'] = img.id!;
             }
             if (img.localFile != null) {
-              files['variants[$i][images][$j][product_variant_images]'] = img.localFile!;
+              files['variants[$i][images][$varImgIndex][product_variant_images]'] = img.localFile!;
             }
+            varImgIndex++;
           }
         }
       }
@@ -638,7 +696,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   : (hasRemote)
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.network(_resolveProductImageUrl(img.remotePath), fit: BoxFit.cover),
+                          child: Image.network(
+                            img.isVariant
+                                ? _resolveVariantImageUrl(img.remotePath)
+                                : _resolveProductImageUrl(img.remotePath),
+                            fit: BoxFit.cover,
+                          ),
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -684,6 +747,16 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Widget _buildVariantCard(int index) {
     final v = _variants[index];
 
+    // Determine field visibility: first variant always displays everything,
+    // subsequent variants are filtered by selected chips.
+    final bool isSecondOrLater = index >= 1;
+    final bool showBarcode = !isSecondOrLater || _selectedVariantFilters.contains('Barcode');
+    final bool showPrice = !isSecondOrLater || _selectedVariantFilters.contains('Price');
+    final bool showQty = !isSecondOrLater || _selectedVariantFilters.contains('Quantity & Tax');
+    final bool showWeight = !isSecondOrLater || _selectedVariantFilters.contains('Weight & Dimensions');
+    final bool showAttributes = !isSecondOrLater || _selectedVariantFilters.contains('Attributes');
+    final bool showImages = !isSecondOrLater || _selectedVariantFilters.contains('Images');
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
@@ -710,253 +783,365 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ),
           const SizedBox(height: 12),
 
-          _buildTextField(
-            controller: v.barcodeController,
-            label: 'Barcode / SKU',
-            icon: Icons.qr_code_scanner_outlined,
-          ),
-          const SizedBox(height: 12),
+          if (showBarcode) ...[
+            _buildTextField(
+              controller: v.barcodeController,
+              label: 'Barcode / SKU',
+              icon: Icons.qr_code_scanner_outlined,
+            ),
+            const SizedBox(height: 12),
+          ],
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: v.priceController,
-                  label: 'Price (₹)',
-                  icon: Icons.currency_rupee,
-                  keyboardType: TextInputType.number,
+          if (showPrice) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.priceController,
+                    label: 'Price (₹)',
+                    icon: Icons.currency_rupee,
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildTextField(
-                  controller: v.discountPriceController,
-                  label: 'Discount Price (₹)',
-                  icon: Icons.price_change_outlined,
-                  keyboardType: TextInputType.number,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.discountPriceController,
+                    label: 'Discount Price (₹)',
+                    icon: Icons.price_change_outlined,
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: v.quantityController,
-                  label: 'Quantity',
-                  icon: Icons.production_quantity_limits,
-                  keyboardType: TextInputType.number,
+          if (showQty) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.quantityController,
+                    label: 'Quantity',
+                    icon: Icons.production_quantity_limits,
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildTextField(
-                  controller: v.taxController,
-                  label: 'Tax (%)',
-                  icon: Icons.percent,
-                  keyboardType: TextInputType.number,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.taxController,
+                    label: 'Tax (%)',
+                    icon: Icons.percent,
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: v.weightController,
-                  label: 'Weight (kg)',
-                  icon: Icons.scale_outlined,
-                  keyboardType: TextInputType.number,
+          if (showWeight) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.weightController,
+                    label: 'Weight (kg)',
+                    icon: Icons.scale_outlined,
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildTextField(
-                  controller: v.lengthController,
-                  label: 'Length (cm)',
-                  icon: Icons.straighten_outlined,
-                  keyboardType: TextInputType.number,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.lengthController,
+                    label: 'Length (cm)',
+                    icon: Icons.straighten_outlined,
+                    keyboardType: TextInputType.number,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.widthController,
+                    label: 'Width (cm)',
+                    icon: Icons.straighten_outlined,
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildTextField(
+                    controller: v.heightController,
+                    label: 'Height (cm)',
+                    icon: Icons.straighten_outlined,
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: v.widthController,
-                  label: 'Width (cm)',
-                  icon: Icons.straighten_outlined,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildTextField(
-                  controller: v.heightController,
-                  label: 'Height (cm)',
-                  icon: Icons.straighten_outlined,
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Attributes selectors
-          const Text(
-            'Variant Attributes',
-            style: TextStyle(color: const Color(0xFF334155), fontSize: 13, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          
-          if (_attributes.isEmpty)
+          if (showAttributes) ...[
             const Text(
-              'No active attributes loaded. Add them in Manage Attributes first.',
-              style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 12),
-            )
-          else
-            ..._attributes.map((attr) {
-              final attrId = attr['id'] as int;
-              final attrName = attr['attribute_name'] ?? 'Attribute';
-              final values = attr['values'] as List<dynamic>? ?? [];
+              'Variant Attributes',
+              style: TextStyle(color: Color(0xFF334155), fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: DropdownButtonFormField<int>(
-                  value: v.selectedAttributeValues[attrId],
-                  dropdownColor: Colors.white,
-                  style: const TextStyle(color: const Color(0xFF0F172A)),
-                  decoration: _buildInputDecoration(attrName, Icons.tune_rounded),
-                  items: values.map((val) {
-                    return DropdownMenuItem<int>(
-                      value: val['id'] as int,
-                      child: Text(val['attribute_value']?.toString() ?? ''),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      v.selectedAttributeValues[attrId] = val;
-                    });
-                  },
-                ),
+            // 1. Render currently selected attributes with a remove button
+            ...v.selectedAttributeValues.entries.where((e) => e.value != null).map((entry) {
+              final attrId = entry.key;
+              final valId = entry.value;
+
+              final attrObj = _attributes.firstWhere(
+                (a) => a['id'] == attrId,
+                orElse: () => null,
               );
-            }),
+              final attrName = attrObj?['attribute_name'] ?? 'Attribute';
 
-          const SizedBox(height: 12),
-          
-          // Variant images header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Variant Images',
-                style: TextStyle(color: const Color(0xFF334155), fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    v.images.add(ProductVariantImageInput(sortOrder: v.images.length + 1));
-                  });
-                },
-                icon: const Icon(Icons.add, color: const Color(0xFFF97316), size: 16),
-                label: const Text('Add Image', style: TextStyle(color: const Color(0xFFF97316), fontSize: 12)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: v.images.length,
-            itemBuilder: (context, vImgIndex) {
-              final img = v.images[vImgIndex];
-              final hasLocal = img.localFile != null;
-              final hasRemote = img.remotePath != null && img.remotePath!.isNotEmpty;
+              final valObj = (attrObj?['values'] as List<dynamic>?)?.firstWhere(
+                (val) => val['id'] == valId,
+                orElse: () => null,
+              );
+              final valName = valObj?['attribute_value'] ?? 'Value';
 
               return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withOpacity(0.01),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                child: Column(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Image #${vImgIndex + 1}', style: const TextStyle(color: const Color(0xFF64748B), fontSize: 11)),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              v.images.removeAt(vImgIndex);
-                              img.sortOrderController.dispose();
-                            });
-                          },
-                          child: const Icon(Icons.close, color: Colors.redAccent, size: 18),
-                        ),
-                      ],
+                    Text(
+                      '$attrName: $valName',
+                      style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13),
                     ),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () => _pickVariantImage(img),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        height: 80,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withOpacity(0.01),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: hasLocal
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(img.localFile!, fit: BoxFit.cover),
-                              )
-                            : hasRemote
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(_resolveVariantImageUrl(img.remotePath), fit: BoxFit.cover),
-                                  )
-                                : const Center(child: Icon(Icons.add_a_photo_outlined, color: const Color(0xFFCBD5E1))),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: img.sortOrderController,
-                      style: const TextStyle(color: const Color(0xFF0F172A)),
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Sort Order',
-                        labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 11),
-                        filled: true,
-                        fillColor: Colors.white.withOpacity(0.005),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(6),
-                          borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(6),
-                          borderSide: const BorderSide(color: const Color(0xFFF97316)),
-                        ),
-                      ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          v.selectedAttributeValues.remove(attrId);
+                        });
+                      },
+                      child: const Icon(Icons.close, color: Colors.redAccent, size: 16),
                     ),
                   ],
                 ),
               );
-            },
-          ),
+            }).toList(),
+
+            const SizedBox(height: 8),
+
+            // 2. Render two dropdowns for selecting attribute and value to add
+            if (_attributes.isEmpty)
+              const Text(
+                'No active attributes loaded. Add them in Manage Attributes first.',
+                style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 12),
+              )
+            else ...[
+              // Main Dropdown (Attributes selection)
+              DropdownButtonFormField<int>(
+                hint: const Text('Choose Attribute'),
+                value: _tempSelectedAttributeId[index],
+                dropdownColor: Colors.white,
+                style: const TextStyle(color: Color(0xFF0F172A)),
+                decoration: _buildInputDecoration('Choose Attribute', Icons.tune_rounded),
+                items: _attributes.where((attr) {
+                  final attrId = attr['id'] as int;
+                  return !v.selectedAttributeValues.containsKey(attrId) || v.selectedAttributeValues[attrId] == null;
+                }).map((attr) {
+                  return DropdownMenuItem<int>(
+                    value: attr['id'] as int,
+                    child: Text(attr['attribute_name'] ?? ''),
+                  );
+                }).toList(),
+                onChanged: (attrId) {
+                  setState(() {
+                    _tempSelectedAttributeId[index] = attrId;
+                    _tempSelectedValueId[index] = null; // Reset value when attribute changes
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Second Dropdown (Value selection for currently selected attribute)
+              Builder(
+                builder: (context) {
+                  final currentAttrId = _tempSelectedAttributeId[index];
+                  List<dynamic> availableVals = [];
+                  if (currentAttrId != null) {
+                    final selectedAttrObj = _attributes.firstWhere(
+                      (attr) => attr['id'] == currentAttrId,
+                      orElse: () => null,
+                     );
+                    if (selectedAttrObj != null) {
+                      availableVals = selectedAttrObj['values'] as List<dynamic>? ?? [];
+                    }
+                  }
+
+                  return DropdownButtonFormField<int>(
+                    hint: const Text('Choose Value'),
+                    value: _tempSelectedValueId[index],
+                    dropdownColor: Colors.white,
+                    style: const TextStyle(color: Color(0xFF0F172A)),
+                    decoration: _buildInputDecoration('Choose Value', Icons.circle_outlined),
+                    items: availableVals.map((val) {
+                      return DropdownMenuItem<int>(
+                        value: val['id'] as int,
+                        child: Text(val['attribute_value']?.toString() ?? ''),
+                      );
+                    }).toList(),
+                    onChanged: currentAttrId == null
+                        ? null
+                        : (valId) {
+                            setState(() {
+                              _tempSelectedValueId[index] = valId;
+                            });
+                          },
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Add attribute button
+              TextButton.icon(
+                onPressed: (_tempSelectedAttributeId[index] == null || _tempSelectedValueId[index] == null)
+                    ? null
+                    : () {
+                        setState(() {
+                          final attrId = _tempSelectedAttributeId[index]!;
+                          final valId = _tempSelectedValueId[index]!;
+                          v.selectedAttributeValues[attrId] = valId;
+                          // Reset temporary values
+                          _tempSelectedAttributeId[index] = null;
+                          _tempSelectedValueId[index] = null;
+                        });
+                      },
+                icon: const Icon(Icons.add_circle_outline, color: Color(0xFFF97316), size: 16),
+                label: const Text('Add Attribute Option', style: TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold, fontSize: 13)),
+              ),
+            ],
+            const SizedBox(height: 12),
+          ],
+          
+          if (showImages) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Variant Images',
+                  style: TextStyle(color: const Color(0xFF334155), fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      v.images.add(ProductVariantImageInput(sortOrder: v.images.length + 1));
+                    });
+                  },
+                  icon: const Icon(Icons.add, color: const Color(0xFFF97316), size: 16),
+                  label: const Text('Add Image', style: TextStyle(color: const Color(0xFFF97316), fontSize: 12)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: v.images.length,
+              itemBuilder: (context, vImgIndex) {
+                final img = v.images[vImgIndex];
+                final hasLocal = img.localFile != null;
+                final hasRemote = img.remotePath != null && img.remotePath!.isNotEmpty;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withOpacity(0.01),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Image #${vImgIndex + 1}', style: const TextStyle(color: const Color(0xFF64748B), fontSize: 11)),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                v.images.removeAt(vImgIndex);
+                                img.sortOrderController.dispose();
+                              });
+                            },
+                            child: const Icon(Icons.close, color: Colors.redAccent, size: 18),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () => _pickVariantImage(img),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          height: 80,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: hasLocal
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(img.localFile!, fit: BoxFit.cover),
+                                )
+                              : hasRemote
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(_resolveVariantImageUrl(img.remotePath), fit: BoxFit.cover),
+                                    )
+                                  : const Center(child: Icon(Icons.add_a_photo_outlined, color: const Color(0xFFCBD5E1))),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: img.sortOrderController,
+                        style: const TextStyle(color: const Color(0xFF0F172A)),
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Sort Order',
+                          labelStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 11),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.005),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: const Color(0xFFF97316)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
         ],
       ),
     );
@@ -1244,6 +1429,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ],
         ),
         const SizedBox(height: 8),
+        _buildFilterChips(),
+        const SizedBox(height: 8),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -1279,18 +1466,65 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       const SizedBox(height: 24),
     ];
   }
+
+  Widget _buildFilterChips() {
+    final filters = ['Attributes', 'Barcode', 'Price', 'Quantity & Tax', 'Weight & Dimensions', 'Images'];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: filters.map((f) {
+          final isSelected = _selectedVariantFilters.contains(f);
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: FilterChip(
+              label: Text(
+                f,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFFF97316),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: const Color(0xFFF97316),
+              backgroundColor: Colors.white,
+              checkmarkColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: Color(0xFFF97316)),
+              ),
+              onSelected: (val) {
+                setState(() {
+                  if (val) {
+                    _selectedVariantFilters.add(f);
+                  } else {
+                    if (_selectedVariantFilters.length > 1) {
+                      _selectedVariantFilters.remove(f);
+                    }
+                  }
+                });
+              },
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 }
 
 class ProductImageInput {
   String? id;
   File? localFile;
   String? remotePath;
+  bool isVariant;
   final TextEditingController sortOrderController;
 
   ProductImageInput({
     this.id,
     this.localFile,
     this.remotePath,
+    this.isVariant = false,
     int sortOrder = 1,
   }) : sortOrderController = TextEditingController(text: sortOrder.toString());
 }

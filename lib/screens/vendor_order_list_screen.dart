@@ -158,7 +158,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) {
         return StatefulBuilder(
@@ -210,7 +210,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                               children: [
                                 Text(
                                   orderRef,
-                                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -269,7 +269,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                               children: [
                                 Text(
                                   prodName,
-                                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
                                 ),
                                 if (item['variant_attributes'] != null && (item['variant_attributes'] as List<dynamic>).isNotEmpty) ...[
                                   const SizedBox(height: 6),
@@ -311,7 +311,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                       const Text('UTR Number', style: TextStyle(color: const Color(0xFF475569), fontSize: 12)),
                                       SelectableText(
                                         item['order_payment_utr_no'].toString(),
-                                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 12, fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -338,7 +338,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                                     fit: BoxFit.contain,
                                                     errorBuilder: (context, error, stackTrace) {
                                                       return Container(
-                                                        color: const Color(0xFF1E293B),
+                                                        color: const Color(0xFFF1F5F9),
                                                         height: 200,
                                                         width: double.infinity,
                                                         child: const Center(
@@ -384,7 +384,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                               fit: BoxFit.cover,
                                               errorBuilder: (context, error, stackTrace) {
                                                 return Container(
-                                                  color: const Color(0xFF1E293B),
+                                                  color: const Color(0xFFF1F5F9),
                                                   child: const Center(
                                                     child: Icon(Icons.image_not_supported_rounded, color: const Color(0xFFCBD5E1), size: 36),
                                                   ),
@@ -425,7 +425,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text('ORDER STATUS', style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 9, fontWeight: FontWeight.bold)),
+                                          const Text('ORDER STATUS', style: TextStyle(color: const Color(0xFF64748B), fontSize: 9, fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 4),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -437,8 +437,8 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
                                                 value: _orderStatuses.contains(ordStatus) ? ordStatus : _orderStatuses.first,
-                                                dropdownColor: const Color(0xFF1E293B),
-                                                style: const TextStyle(color: Colors.white, fontSize: 13),
+                                                dropdownColor: Colors.white,
+                                                style: const TextStyle(color: Color(0xFF0F172A), fontSize: 13),
                                                 isExpanded: true,
                                                 icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFFF97316), size: 18),
                                                 items: _orderStatuses.map((String val) {
@@ -468,7 +468,7 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text('PAYMENT STATUS', style: TextStyle(color: const Color(0xFFCBD5E1), fontSize: 9, fontWeight: FontWeight.bold)),
+                                          const Text('PAYMENT STATUS', style: TextStyle(color: const Color(0xFF64748B), fontSize: 9, fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 4),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -480,8 +480,8 @@ class _VendorOrderListScreenState extends State<VendorOrderListScreen> {
                                             child: DropdownButtonHideUnderline(
                                               child: DropdownButton<String>(
                                                 value: _paymentStatuses.contains(payStatus) ? payStatus : _paymentStatuses.first,
-                                                dropdownColor: const Color(0xFF1E293B),
-                                                style: const TextStyle(color: Colors.white, fontSize: 13),
+                                                dropdownColor: Colors.white,
+                                                style: const TextStyle(color: Color(0xFF0F172A), fontSize: 13),
                                                 isExpanded: true,
                                                 icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFFF97316), size: 18),
                                                 items: _paymentStatuses.map((String val) {

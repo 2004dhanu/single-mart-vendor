@@ -597,7 +597,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       keyboardType: keyboardType,
       enabled: enabled,
       textCapitalization: textCapitalization,
-      style: TextStyle(color: enabled ? Colors.white : Colors.white60),
+      style: TextStyle(color: enabled ? const Color(0xFF0F172A) : const Color(0xFF64748B)),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: const Color(0xFFF97316)),
