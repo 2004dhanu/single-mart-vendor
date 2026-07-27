@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
+import '../widgets/square_image_cropper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ProductFormScreen extends StatefulWidget {
   final Map<String, dynamic>? product; // Null if creating
@@ -93,7 +95,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       _quantityController.text = p['product_quantity']?.toString() ?? '';
       _productStatus = p['product_status']?.toString() ?? 'In Stock';
 
-      // Parse selection IDs safely
+      // Parse selection IDs safelyc
       _selectedCategoryId = int.tryParse(p['product_category_id']?.toString() ?? '');
       _selectedSubcategoryId = int.tryParse(p['product_sub_category_id']?.toString() ?? '');
       _selectedBrandId = int.tryParse(p['product_brand_id']?.toString() ?? '');
@@ -278,9 +280,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     try {
       final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75);
       if (picked != null) {
-        setState(() {
-          img.localFile = File(picked.path);
-        });
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(picked.path));
+          if (cropped != null) {
+            setState(() {
+              img.localFile = cropped;
+            });
+          }
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -291,9 +298,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     try {
       final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75);
       if (picked != null) {
-        setState(() {
-          img.localFile = File(picked.path);
-        });
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(picked.path));
+          if (cropped != null) {
+            setState(() {
+              img.localFile = cropped;
+            });
+          }
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -561,7 +573,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -691,7 +703,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               child: (hasLocal)
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.file(img.localFile!, fit: BoxFit.cover),
+                      child: kIsWeb
+                          ? Image.network(img.localFile!.path, fit: BoxFit.cover)
+                          : Image.file(img.localFile!, fit: BoxFit.cover),
                     )
                   : (hasRemote)
                       ? ClipRRect(
@@ -1105,7 +1119,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                           child: hasLocal
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(img.localFile!, fit: BoxFit.cover),
+                                  child: kIsWeb
+                                      ? Image.network(img.localFile!.path, fit: BoxFit.cover)
+                                      : Image.file(img.localFile!, fit: BoxFit.cover),
                                 )
                               : hasRemote
                                   ? ClipRRect(
@@ -1147,12 +1163,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
-    final bool isDesktop = width > 900;
-
-    Widget leftColumn = Column(
+  Widget _buildDetailsCard() {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('Product Details', Icons.inventory_2_outlined),
@@ -1165,7 +1177,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ),
           const SizedBox(height: 16),
           
-          // Product Status Dropdown
           DropdownButtonFormField<String>(
             value: _productStatus,
             dropdownColor: Colors.white,
@@ -1182,45 +1193,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 });
               }
             },
-          ),
-          const SizedBox(height: 16),
-
-          // Has Variants Toggle Card
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF97316).withOpacity(0.02),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFF97316).withOpacity(0.1)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.tune_rounded, color: Color(0xFFF97316), size: 20),
-                    SizedBox(width: 10),
-                    Text(
-                      'Has Variants / Multi-attributes',
-                      style: TextStyle(color: Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                Checkbox(
-                  value: _hasVariants,
-                  activeColor: const Color(0xFFF97316),
-                  checkColor: Colors.white,
-                  onChanged: (val) {
-                    setState(() {
-                      _hasVariants = val ?? false;
-                      if (_hasVariants && _variants.isEmpty) {
-                        _addVariantInput();
-                      }
-                    });
-                  },
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 16),
 
@@ -1279,32 +1251,278 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             maxLines: 4,
           ),
         ]),
-        const SizedBox(height: 24),
-        
-        // On mobile, show right column widgets below the left column cards
-        if (!isDesktop) ..._buildRightColumnWidgets(),
-
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF97316),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: _saveForm,
-            child: Text(
-              _isEditMode ? 'Update Product' : 'Create Product',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
       ],
     );
+  }
+
+  Widget _buildRelationshipsCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Relationships', Icons.lan_outlined),
+        _buildCard([
+          DropdownButtonFormField<int>(
+            value: _selectedCategoryId,
+            dropdownColor: Colors.white,
+            style: const TextStyle(color: Color(0xFF0F172A)),
+            decoration: _buildInputDecoration('Category', Icons.category_outlined),
+            items: _categories.map((c) {
+              return DropdownMenuItem<int>(
+                value: c['id'] as int,
+                child: Text(c['categories_name']?.toString() ?? ''),
+              );
+            }).toList(),
+            onChanged: (val) {
+              setState(() {
+                _selectedCategoryId = val;
+                _selectedSubcategoryId = null;
+                _filterSubcategories();
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+
+          DropdownButtonFormField<int>(
+            value: _selectedSubcategoryId,
+            dropdownColor: Colors.white,
+            style: const TextStyle(color: Color(0xFF0F172A)),
+            decoration: _buildInputDecoration('Subcategory', Icons.subdirectory_arrow_right),
+            items: _filteredSubcategories.map((s) {
+              return DropdownMenuItem<int>(
+                value: s['id'] as int,
+                child: Text(s['categories_subs_name']?.toString() ?? ''),
+              );
+            }).toList(),
+            onChanged: (val) {
+              setState(() {
+                _selectedSubcategoryId = val;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+
+          DropdownButtonFormField<int>(
+            value: _selectedBrandId,
+            dropdownColor: Colors.white,
+            style: const TextStyle(color: Color(0xFF0F172A)),
+            decoration: _buildInputDecoration('Brand', Icons.branding_watermark_outlined),
+            items: _brands.map((b) {
+              return DropdownMenuItem<int>(
+                value: b['id'] as int,
+                child: Text(b['brands_name']?.toString() ?? ''),
+              );
+            }).toList(),
+            onChanged: (val) {
+              setState(() {
+                _selectedBrandId = val;
+              });
+            },
+          ),
+        ]),
+      ],
+    );
+  }
+
+  Widget _buildVariantsWidget() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionHeader('Product Variants', Icons.grid_view_rounded),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Has Variants',
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 4),
+                SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: Checkbox(
+                    value: _hasVariants,
+                    activeColor: const Color(0xFFF97316),
+                    checkColor: Colors.white,
+                    onChanged: (val) {
+                      setState(() {
+                        _hasVariants = val ?? false;
+                        if (_hasVariants && _variants.isEmpty) {
+                          _addVariantInput();
+                        }
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        if (_hasVariants) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                onPressed: _addVariantInput,
+                icon: const Icon(Icons.add_circle_outline, color: Color(0xFFF97316), size: 18),
+                label: const Text('Add Variant', style: TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold, fontSize: 13)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final bool showSidebarInline = constraints.maxWidth > 700;
+              if (showSidebarInline) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildFilterSidebar(),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, innerConstraints) {
+                          final double itemWidth = (innerConstraints.maxWidth - 16) / 2;
+                          return Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: List.generate(_variants.length, (index) {
+                              return SizedBox(
+                                width: itemWidth > 200 ? itemWidth : innerConstraints.maxWidth,
+                                child: _buildVariantCard(index),
+                              );
+                            }),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildFilterSidebarWidth(constraints.maxWidth),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: List.generate(_variants.length, (index) {
+                        final double itemWidth = (constraints.maxWidth - 16) / 2;
+                        return SizedBox(
+                          width: itemWidth > 200 ? itemWidth : constraints.maxWidth,
+                          child: _buildVariantCard(index),
+                        );
+                      }),
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildImagesWidget() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionHeader('Product Images', Icons.image_outlined),
+            IconButton(
+              icon: const Icon(Icons.add_circle, color: Color(0xFFF97316), size: 28),
+              tooltip: 'Add Image',
+              onPressed: _addImageInput,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _images.length,
+          itemBuilder: (context, index) {
+            return _buildImageInputCard(index);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFF97316),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: _saveForm,
+        child: Text(
+          _isEditMode ? 'Update Product' : 'Create Product',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
+
+    final List<Widget> bodyContent = [];
+
+    if (isDesktop) {
+      bodyContent.addAll([
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 6,
+              child: _buildDetailsCard(),
+            ),
+            const SizedBox(width: 24),
+            Expanded(
+              flex: 6,
+              child: _buildRelationshipsCard(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildVariantsWidget(),
+        const SizedBox(height: 24),
+        _buildImagesWidget(),
+        const SizedBox(height: 32),
+        _buildSubmitButton(),
+        const SizedBox(height: 32),
+      ]);
+    } else {
+      bodyContent.addAll([
+        _buildDetailsCard(),
+        const SizedBox(height: 24),
+        _buildRelationshipsCard(),
+        const SizedBox(height: 24),
+        _buildVariantsWidget(),
+        const SizedBox(height: 24),
+        _buildImagesWidget(),
+        const SizedBox(height: 32),
+        _buildSubmitButton(),
+        const SizedBox(height: 32),
+      ]);
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -1326,25 +1544,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 child: Center(
                   child: Container(
                     constraints: BoxConstraints(maxWidth: isDesktop ? 1200 : double.infinity),
-                    child: isDesktop
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 6,
-                                child: leftColumn,
-                              ),
-                              const SizedBox(width: 24),
-                              Expanded(
-                                flex: 6,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: _buildRightColumnWidgets(),
-                                ),
-                              ),
-                            ],
-                          )
-                        : leftColumn,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: bodyContent,
+                    ),
                   ),
                 ),
               ),
@@ -1352,162 +1555,168 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     );
   }
 
-  List<Widget> _buildRightColumnWidgets() {
-    return [
-      _buildSectionHeader('Relationships', Icons.lan_outlined),
-      _buildCard([
-        DropdownButtonFormField<int>(
-          value: _selectedCategoryId,
-          dropdownColor: Colors.white,
-          style: const TextStyle(color: Color(0xFF0F172A)),
-          decoration: _buildInputDecoration('Category', Icons.category_outlined),
-          items: _categories.map((c) {
-            return DropdownMenuItem<int>(
-              value: c['id'] as int,
-              child: Text(c['categories_name']?.toString() ?? ''),
-            );
-          }).toList(),
-          onChanged: (val) {
-            setState(() {
-              _selectedCategoryId = val;
-              _selectedSubcategoryId = null;
-              _filterSubcategories();
-            });
-          },
-        ),
-        const SizedBox(height: 16),
-
-        DropdownButtonFormField<int>(
-          value: _selectedSubcategoryId,
-          dropdownColor: Colors.white,
-          style: const TextStyle(color: Color(0xFF0F172A)),
-          decoration: _buildInputDecoration('Subcategory', Icons.subdirectory_arrow_right),
-          items: _filteredSubcategories.map((s) {
-            return DropdownMenuItem<int>(
-              value: s['id'] as int,
-              child: Text(s['categories_subs_name']?.toString() ?? ''),
-            );
-          }).toList(),
-          onChanged: (val) {
-            setState(() {
-              _selectedSubcategoryId = val;
-            });
-          },
-        ),
-        const SizedBox(height: 16),
-
-        DropdownButtonFormField<int>(
-          value: _selectedBrandId,
-          dropdownColor: Colors.white,
-          style: const TextStyle(color: Color(0xFF0F172A)),
-          decoration: _buildInputDecoration('Brand', Icons.branding_watermark_outlined),
-          items: _brands.map((b) {
-            return DropdownMenuItem<int>(
-              value: b['id'] as int,
-              child: Text(b['brands_name']?.toString() ?? ''),
-            );
-          }).toList(),
-          onChanged: (val) {
-            setState(() {
-              _selectedBrandId = val;
-            });
-          },
-        ),
-      ]),
-      const SizedBox(height: 24),
-
-      if (_hasVariants) ...[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildSectionHeader('Product Variants', Icons.grid_view_rounded),
-            TextButton.icon(
-              onPressed: _addVariantInput,
-              icon: const Icon(Icons.add_circle_outline, color: Color(0xFFF97316), size: 20),
-              label: const Text('Add Variant', style: TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        _buildFilterChips(),
-        const SizedBox(height: 8),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _variants.length,
-          itemBuilder: (context, index) {
-            return _buildVariantCard(index);
-          },
-        ),
-        const SizedBox(height: 24),
-      ],
-
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildSectionHeader('Product Images', Icons.image_outlined),
-          IconButton(
-            icon: const Icon(Icons.add_circle, color: Color(0xFFF97316), size: 28),
-            tooltip: 'Add Image',
-            onPressed: _addImageInput,
-          ),
-        ],
-      ),
-      const SizedBox(height: 8),
-
-      ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: _images.length,
-        itemBuilder: (context, index) {
-          return _buildImageInputCard(index);
-        },
-      ),
-      const SizedBox(height: 24),
-    ];
-  }
-
-  Widget _buildFilterChips() {
+  Widget _buildFilterSidebar() {
     final filters = ['Attributes', 'Barcode', 'Price', 'Quantity & Tax', 'Weight & Dimensions', 'Images'];
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: filters.map((f) {
-          final isSelected = _selectedVariantFilters.contains(f);
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: FilterChip(
-              label: Text(
-                f,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFFF97316),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.filter_alt_outlined, color: Color(0xFFF97316), size: 18),
+              SizedBox(width: 8),
+              Text(
+                'Filters',
+                style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const SizedBox(height: 12),
+          ...filters.map((f) {
+            final isSelected = _selectedVariantFilters.contains(f);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (!isSelected) {
+                      _selectedVariantFilters.add(f);
+                    } else {
+                      if (_selectedVariantFilters.length > 1) {
+                        _selectedVariantFilters.remove(f);
+                      }
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: Checkbox(
+                        value: isSelected,
+                        activeColor: const Color(0xFFF97316),
+                        onChanged: (val) {
+                          setState(() {
+                            if (val == true) {
+                              _selectedVariantFilters.add(f);
+                            } else {
+                              if (_selectedVariantFilters.length > 1) {
+                                _selectedVariantFilters.remove(f);
+                              }
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        f,
+                        style: TextStyle(
+                          color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              selected: isSelected,
-              selectedColor: const Color(0xFFF97316),
-              backgroundColor: Colors.white,
-              checkmarkColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: const BorderSide(color: Color(0xFFF97316)),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterSidebarWidth(double width) {
+    final filters = ['Attributes', 'Barcode', 'Price', 'Quantity & Tax', 'Weight & Dimensions', 'Images'];
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.filter_alt_outlined, color: Color(0xFFF97316), size: 16),
+              SizedBox(width: 6),
+              Text(
+                'Filters',
+                style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13),
               ),
-              onSelected: (val) {
-                setState(() {
-                  if (val) {
-                    _selectedVariantFilters.add(f);
-                  } else {
-                    if (_selectedVariantFilters.length > 1) {
-                      _selectedVariantFilters.remove(f);
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: filters.map((f) {
+              final isSelected = _selectedVariantFilters.contains(f);
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    if (!isSelected) {
+                      _selectedVariantFilters.add(f);
+                    } else {
+                      if (_selectedVariantFilters.length > 1) {
+                        _selectedVariantFilters.remove(f);
+                      }
                     }
-                  }
-                });
-              },
-            ),
-          );
-        }).toList(),
+                  });
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: Checkbox(
+                        value: isSelected,
+                        activeColor: const Color(0xFFF97316),
+                        onChanged: (val) {
+                          setState(() {
+                            if (val == true) {
+                              _selectedVariantFilters.add(f);
+                            } else {
+                              if (_selectedVariantFilters.length > 1) {
+                                _selectedVariantFilters.remove(f);
+                              }
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      f,
+                      style: TextStyle(
+                        color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

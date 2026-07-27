@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
 import 'subcategory_list_screen.dart';
+import '../widgets/square_image_cropper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class SubcategoryFormScreen extends StatefulWidget {
   final SubcategoryItem? sub; // Null if creating
@@ -72,9 +74,14 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
     try {
       final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 80);
       if (picked != null) {
-        setState(() {
-          _imageFile = File(picked.path);
-        });
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(picked.path));
+          if (cropped != null) {
+            setState(() {
+              _imageFile = cropped;
+            });
+          }
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -287,7 +294,7 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: Text(
           _isEditMode ? 'Edit Subcategory' : 'Add Subcategory',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
       ),
       body: _isLoading
@@ -360,7 +367,7 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
 
                     const Text(
                       'Subcategory Image',
-                      style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
 
@@ -383,7 +390,9 @@ class _SubcategoryFormScreenState extends State<SubcategoryFormScreen> {
                         child: _imageFile != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                child: Image.file(_imageFile!, fit: BoxFit.cover),
+                                child: kIsWeb
+                                    ? Image.network(_imageFile!.path, fit: BoxFit.cover)
+                                    : Image.file(_imageFile!, fit: BoxFit.cover),
                               )
                             : (_isEditMode && widget.sub?.image != null && widget.sub!.image!.isNotEmpty)
                                 ? ClipRRect(

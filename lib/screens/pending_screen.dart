@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../services/session_service.dart';
 import 'auth_screen.dart';
 import 'dashboard_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class PendingScreen extends StatefulWidget {
   const PendingScreen({super.key});
@@ -51,8 +52,13 @@ class _PendingScreenState extends State<PendingScreen> {
     if (checkCode == 200) {
       final password = checkResult['data'] as String? ?? '';
       
-      // 2. Perform Login to get latest user status
-      final loginResult = await ApiService.login(mobile, password);
+      String fcmToken = '';
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+      } catch (e) {
+        debugPrint('FCM Token error: $e');
+      }
+      final loginResult = await ApiService.login(mobile, password, deviceId: fcmToken);
       final loginCode = loginResult['code'] as int? ?? 500;
 
       if (loginCode == 200 && loginResult['data'] != null) {

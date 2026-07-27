@@ -154,6 +154,8 @@ class _AttributeListScreenState extends State<AttributeListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -162,164 +164,215 @@ class _AttributeListScreenState extends State<AttributeListScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Manage Attributes',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
       ),
-      body: Column(
-        children: [
-          // Search Bar & Add Button
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    style: const TextStyle(color: const Color(0xFF0F172A)),
-                    decoration: InputDecoration(
-                      hintText: 'Search attributes...',
-                      hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4)),
-                      prefixIcon: const Icon(Icons.search, color: const Color(0xFFF97316)),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              // Search Bar & Add Button
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        style: const TextStyle(color: const Color(0xFF0F172A)),
+                        decoration: InputDecoration(
+                          hintText: 'Search attributes...',
+                          hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4)),
+                          prefixIcon: const Icon(Icons.search, color: const Color(0xFFF97316)),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [const Color(0xFFF97316), const Color(0xFFF97316)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.all(16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const AttributeFormScreen()),
+                          );
+                          if (result == true) {
+                            _loadAttributes();
+                          }
+                        },
+                        child: const Icon(Icons.add, color: Colors.black, size: 24),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
+                    : _filteredAttributes.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.tune_rounded, size: 64, color: const Color(0xFF0F172A).withOpacity(0.2)),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No attributes found',
+                                  style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadAttributes,
+                            color: const Color(0xFFF97316),
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isDesktop ? 4 : 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: isDesktop ? 2.2 : 1.4,
+                              ),
+                              itemCount: _filteredAttributes.length,
+                              itemBuilder: (context, index) {
+                                final attr = _filteredAttributes[index];
+                                return _buildAttributeCard(attr);
+                              },
+                            ),
+                          ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttributeCard(Map<String, dynamic> attr) {
+    final name = attr['attribute_name'] ?? 'N/A';
+    final status = attr['attribute_status'] ?? 'Active';
+    final isActive = status == 'Active';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: const Center(
+              child: Icon(Icons.tune_rounded, color: Color(0xFFF97316), size: 24),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [const Color(0xFFF97316), const Color(0xFFF97316)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.all(16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const AttributeFormScreen()),
-                      );
-                      if (result == true) {
-                        _loadAttributes();
-                      }
-                    },
-                    child: const Icon(Icons.add, color: Colors.black, size: 24),
-                  ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 18,
+                      width: 32,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Switch(
+                          value: isActive,
+                          activeColor: const Color(0xFFF97316),
+                          inactiveTrackColor: const Color(0xFFE2E8F0),
+                          onChanged: (val) => _toggleAttributeStatus(attr, val),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.edit_outlined, color: Color(0xFF64748B), size: 16),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AttributeFormScreen(attribute: attr),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadAttributes();
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
-                : _filteredAttributes.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.tune_rounded, size: 64, color: const Color(0xFF0F172A).withOpacity(0.2)),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No attributes found',
-                              style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadAttributes,
-                        color: const Color(0xFFF97316),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _filteredAttributes.length,
-                          itemBuilder: (context, index) {
-                            final attr = _filteredAttributes[index];
-                            final id = attr['id'] as int;
-                            final name = attr['attribute_name'] ?? 'N/A';
-                            final status = attr['attribute_status'] ?? 'Active';
-                            final isActive = status == 'Active';
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: const Color(0xFFF97316).withOpacity(0.1),
-                                    child: const Icon(Icons.tune_rounded, color: const Color(0xFFF97316)),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          name,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          status,
-                                          style: TextStyle(
-                                            color: isActive ? Colors.greenAccent : Colors.redAccent,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Switch(
-                                    value: isActive,
-                                    activeColor: const Color(0xFFF97316),
-                                    activeTrackColor: const Color(0xFFF97316).withOpacity(0.2),
-                                    inactiveThumbColor: const Color(0xFFCBD5E1),
-                                    inactiveTrackColor: const Color(0xFFE2E8F0),
-                                    onChanged: (val) => _toggleAttributeStatus(attr, val),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
-                                    onPressed: () async {
-                                      final result = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => AttributeFormScreen(attribute: attr),
-                                        ),
-                                      );
-                                      if (result == true) {
-                                        _loadAttributes();
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
           ),
         ],
       ),

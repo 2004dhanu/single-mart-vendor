@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
+import '../widgets/square_image_cropper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class CategoryFormScreen extends StatefulWidget {
   final Map<String, dynamic>? category; // Null if creating
@@ -70,9 +72,14 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     try {
       final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 70);
       if (picked != null) {
-        setState(() {
-          _categoryImageFile = File(picked.path);
-        });
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(picked.path));
+          if (cropped != null) {
+            setState(() {
+              _categoryImageFile = cropped;
+            });
+          }
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -83,9 +90,14 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     try {
       final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 70);
       if (picked != null) {
-        setState(() {
-          sub.localImageFile = File(picked.path);
-        });
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(picked.path));
+          if (cropped != null) {
+            setState(() {
+              sub.localImageFile = cropped;
+            });
+          }
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -459,7 +471,9 @@ files.forEach((k,v){
             child: (hasLocal)
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.file(localFile, fit: BoxFit.cover),
+                    child: kIsWeb
+                        ? Image.network(localFile.path, fit: BoxFit.cover)
+                        : Image.file(localFile, fit: BoxFit.cover),
                   )
                 : (hasRemote)
                     ? ClipRRect(

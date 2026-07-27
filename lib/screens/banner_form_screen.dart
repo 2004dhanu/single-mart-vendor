@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
+import '../widgets/square_image_cropper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class BannerFormScreen extends StatefulWidget {
   final Map<String, dynamic>? banner; // Null if creating
@@ -51,9 +53,14 @@ class _BannerFormScreenState extends State<BannerFormScreen> {
     try {
       final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 80);
       if (picked != null) {
-        setState(() {
-          _imageFile = File(picked.path);
-        });
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(picked.path));
+          if (cropped != null) {
+            setState(() {
+              _imageFile = cropped;
+            });
+          }
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -245,7 +252,9 @@ class _BannerFormScreenState extends State<BannerFormScreen> {
                         child: _imageFile != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                child: Image.file(_imageFile!, fit: BoxFit.cover),
+                                child: kIsWeb
+                                    ? Image.network(_imageFile!.path, fit: BoxFit.cover)
+                                    : Image.file(_imageFile!, fit: BoxFit.cover),
                               )
                             : (_isEditMode && widget.banner?['banner_image'] != null && widget.banner!['banner_image'].toString().isNotEmpty)
                                 ? ClipRRect(

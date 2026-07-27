@@ -116,6 +116,8 @@ class _BannerListScreenState extends State<BannerListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -124,7 +126,7 @@ class _BannerListScreenState extends State<BannerListScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Banners Management',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -142,173 +144,212 @@ class _BannerListScreenState extends State<BannerListScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          // Search Input
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(color: const Color(0xFF0F172A)),
-              decoration: InputDecoration(
-                hintText: 'Search banners...',
-                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
-                filled: true,
-                fillColor: Colors.white,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              // Search Input
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: const Color(0xFF0F172A)),
+                  decoration: InputDecoration(
+                    hintText: 'Search banners...',
+                    hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                    prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
+                    filled: true,
+                    fillColor: Colors.white,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: const Color(0xFFF97316)),
+                    ),
+                  ),
                 ),
               ),
+
+              // Main List / Loader
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
+                    : _filteredBanners.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.view_carousel_outlined, color: const Color(0xFFCBD5E1), size: 64),
+                                const SizedBox(height: 16),
+                                 const Text(
+                                  'No banners found',
+                                  style: TextStyle(color: Color(0xFF475569), fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadBanners,
+                            color: const Color(0xFFF97316),
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isDesktop ? 4 : 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: isDesktop ? 2.2 : 1.4,
+                              ),
+                              itemCount: _filteredBanners.length,
+                              itemBuilder: (context, index) {
+                                final banner = _filteredBanners[index] as Map<String, dynamic>;
+                                return _buildBannerCard(banner);
+                              },
+                            ),
+                          ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBannerCard(Map<String, dynamic> banner) {
+    final name = banner['banner']?.toString() ?? 'Unnamed Banner';
+    final link = banner['banner_link']?.toString() ?? '';
+    final sort = banner['banner_sort_order']?.toString() ?? '1';
+    final status = banner['banner_status']?.toString() ?? 'Active';
+    final isActive = status == 'Active';
+    final imgPath = banner['banner_image'] as String?;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: imgPath != null && imgPath.isNotEmpty
+                  ? Image.network(
+                      _resolveBannerImageUrl(imgPath),
+                      fit: BoxFit.cover,
+                    )
+                  : const Icon(Icons.image_outlined, color: Color(0xFFCBD5E1), size: 24),
             ),
           ),
-
-          // Main List / Loader
+          const SizedBox(width: 12),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
-                : _filteredBanners.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.view_carousel_outlined, color: const Color(0xFFCBD5E1), size: 64),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No banners found',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadBanners,
-                        color: const Color(0xFFF97316),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          itemCount: _filteredBanners.length,
-                          itemBuilder: (context, index) {
-                            final banner = _filteredBanners[index] as Map<String, dynamic>;
-                            final name = banner['banner']?.toString() ?? 'Unnamed Banner';
-                            final link = banner['banner_link']?.toString() ?? '';
-                            final sort = banner['banner_sort_order']?.toString() ?? '1';
-                            final status = banner['banner_status']?.toString() ?? 'Active';
-                            final isActive = status == 'Active';
-                            final imgPath = banner['banner_image'] as String?;
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 16.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Banner Image Preview Box
-                                  Container(
-                                    height: 140,
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16),
-                                      ),
-                                    ),
-                                    child: imgPath != null && imgPath.isNotEmpty
-                                        ? ClipRRect(
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(16),
-                                              topRight: Radius.circular(16),
-                                            ),
-                                            child: Image.network(
-                                              _resolveBannerImageUrl(imgPath),
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                            ),
-                                          )
-                                        : const Center(
-                                            child: Icon(Icons.image_outlined, color: const Color(0xFFCBD5E1), size: 40),
-                                          ),
-                                  ),
-                                  
-                                  ListTile(
-                                    title: Text(
-                                      name,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          if (link.isNotEmpty) ...[
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.link_outlined, color: const Color(0xFFF97316), size: 14),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                  child: Text(
-                                                    link,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.5), fontSize: 12),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                          ],
-                                          Text(
-                                            'Sort Order: $sort',
-                                            style: const TextStyle(color: const Color(0xFFF97316), fontSize: 12, fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Switch(
-                                          value: isActive,
-                                          activeColor: const Color(0xFFF97316),
-                                          inactiveThumbColor: Colors.white54,
-                                          onChanged: (val) => _toggleStatus(banner, isActive),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
-                                          onPressed: () async {
-                                            final result = await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) => BannerFormScreen(banner: banner),
-                                              ),
-                                            );
-                                            if (result == true) {
-                                              _loadBanners();
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                if (link.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      const Icon(Icons.link_outlined, color: Color(0xFFF97316), size: 12),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          link,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: const Color(0xFF64748B), fontSize: 11),
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                ],
+                Text(
+                  'Sort Order: $sort',
+                  style: const TextStyle(color: Color(0xFFF97316), fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 18,
+                      width: 32,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Switch(
+                          value: isActive,
+                          activeColor: const Color(0xFFF97316),
+                          inactiveTrackColor: const Color(0xFFE2E8F0),
+                          onChanged: (val) => _toggleStatus(banner, isActive),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.edit_outlined, color: Color(0xFF64748B), size: 16),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BannerFormScreen(banner: banner),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadBanners();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

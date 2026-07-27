@@ -4,6 +4,9 @@ import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
 import 'pending_screen.dart';
+import '../widgets/square_image_cropper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String mobileNumber;
@@ -107,16 +110,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        setState(() {
-          if (type == 'user_image') {
-            _userImageFile = file;
-          } else if (type == 'qr_code') {
-            _qrCodeFile = file;
-          } else if (type == 'business_document') {
-            _businessDocFile = file;
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(pickedFile.path));
+          if (cropped != null) {
+            setState(() {
+              if (type == 'user_image') {
+                _userImageFile = cropped;
+              } else if (type == 'qr_code') {
+                _qrCodeFile = cropped;
+              } else if (type == 'business_document') {
+                _businessDocFile = cropped;
+              }
+            });
           }
-        });
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -210,7 +217,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (checkCode == 200) {
         final backendOtp = checkResult['data'] as String? ?? '';
         
-        final loginResult = await ApiService.login(widget.mobileNumber, backendOtp);
+        String fcmToken = '';
+        try {
+          fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+        } catch (e) {
+          debugPrint('FCM Token error: $e');
+        }
+        final loginResult = await ApiService.login(widget.mobileNumber, backendOtp, deviceId: fcmToken);
         final loginCode = loginResult['code'] as int? ?? 500;
 
         if (loginCode == 200 && loginResult['data'] != null) {
@@ -280,7 +293,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
-        title: const Text('Vendor Registration', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Vendor Registration', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: const Color(0xFF0F172A)),
           onPressed: () => Navigator.of(context).pop(),
@@ -295,7 +308,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 16),
                   Text(
                     'Creating your account...',
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -580,7 +593,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(
                       width: double.infinity,
                       height: double.infinity,
-                      child: Image.file(file, fit: BoxFit.cover),
+                      child: kIsWeb
+                          ? Image.network(file.path, fit: BoxFit.cover)
+                          : Image.file(file, fit: BoxFit.cover),
                     ),
                     // Dark Overlay
                     Container(

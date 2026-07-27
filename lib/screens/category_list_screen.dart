@@ -194,6 +194,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -202,7 +204,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Manage Categories',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -226,79 +228,90 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           }
         },
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _filterCategories,
-              style: const TextStyle(color: const Color(0xFF0F172A)),
-              decoration: InputDecoration(
-                hintText: 'Search categories...',
-                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: const Color(0xFFF97316)),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: const Color(0xFF0F172A)),
-                        onPressed: () {
-                          _searchController.clear();
-                          _filterCategories('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _filterCategories,
+                  style: const TextStyle(color: const Color(0xFF0F172A)),
+                  decoration: InputDecoration(
+                    hintText: 'Search categories...',
+                    hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                    prefixIcon: const Icon(Icons.search, color: const Color(0xFFF97316)),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: const Color(0xFF0F172A)),
+                            onPressed: () {
+                              _searchController.clear();
+                              _filterCategories('');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: const Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: const Color(0xFFF97316)),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          // Category List
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
-                : _filteredCategories.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.category_outlined, color: const Color(0xFFCBD5E1), size: 64),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No categories found',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
+              // Category List
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
+                    : _filteredCategories.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.category_outlined, color: const Color(0xFFCBD5E1), size: 64),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'No categories found',
+                                  style: TextStyle(color: Color(0xFF475569), fontSize: 16),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadCategories,
-                        color: const Color(0xFFF97316),
-                        backgroundColor: const Color(0xFF1E293B),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          itemCount: _filteredCategories.length,
-                          itemBuilder: (context, index) {
-                            final category = _filteredCategories[index] as Map<String, dynamic>;
-                            return _buildCategoryCard(category);
-                          },
-                        ),
-                      ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadCategories,
+                            color: const Color(0xFFF97316),
+                            backgroundColor: Colors.white,
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isDesktop ? 4 : 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: isDesktop ? 2.2 : 1.4,
+                              ),
+                              itemCount: _filteredCategories.length,
+                              itemBuilder: (context, index) {
+                                final category = _filteredCategories[index] as Map<String, dynamic>;
+                                return _buildCategoryCard(category);
+                              },
+                            ),
+                          ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -335,7 +348,6 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     final status = category['categories_status']?.toString() ?? 'Active';
     final isActive = status.toLowerCase() == 'active';
     final subcategories = category['subs'] as List<dynamic>? ?? [];
-    final isLoadingSubs = category['is_loading_subs'] as bool? ?? false;
 
     // Parse subcategory names list for count
     final String subCategoriesStr = category['sub_categories']?.toString() ?? '';
@@ -345,247 +357,137 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     final int subCount = subNames.isNotEmpty ? subNames.length : subcategories.length;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            backgroundColor: Colors.transparent,
-            collapsedBackgroundColor: Colors.transparent,
-            onExpansionChanged: (expanded) {
-              if (expanded && subcategories.isEmpty) {
-                _loadCategoryDetails(category);
-              }
-            },
-            leading: CircleAvatar(
-              radius: 24,
-              backgroundColor: Colors.white,
-              backgroundImage: imagePath != null && imagePath.isNotEmpty
-                  ? NetworkImage(_resolveCategoryImageUrl(imagePath))
-                  : null,
-              child: imagePath == null || imagePath.isEmpty
-                  ? const Icon(Icons.category_rounded, color: const Color(0xFFF97316), size: 24)
-                  : null,
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            title: Text(
-              name,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: imagePath != null && imagePath.isNotEmpty
+                  ? Image.network(
+                      _resolveCategoryImageUrl(imagePath),
+                      fit: BoxFit.cover,
+                    )
+                  : const Icon(Icons.category_rounded, color: Color(0xFFCBD5E1), size: 24),
             ),
-            subtitle: Row(
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  margin: const EdgeInsets.only(top: 4.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: isActive ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isActive ? Colors.greenAccent : Colors.redAccent,
-                      width: 0.5,
-                    ),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      color: isActive ? Colors.greenAccent : Colors.redAccent,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(height: 2),
                 Text(
                   '$subCount subcategories',
-                  style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 12),
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                 ),
-              ],
-            ),
-            childrenPadding: const EdgeInsets.all(16),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Switch(
-                  value: isActive,
-                  activeColor: const Color(0xFFF97316),
-                  inactiveTrackColor: const Color(0xFFE2E8F0),
-                  onChanged: (val) => _toggleCategoryStatus(category, val),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
-                  onPressed: () async {
-                    // Fetch full category details (with subs) before navigating to form
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    try {
-                      final token = await SessionService.getToken();
-                      if (token != null) {
-                        final detailResp = await ApiService.fetchCategoryById(category['id'] as int, token);
-                        if (detailResp['data'] != null) {
-                          final fullCategory = detailResp['data'] as Map<String, dynamic>;
-                          if (mounted) {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CategoryFormScreen(category: fullCategory),
-                              ),
-                            );
-                            if (result == true) {
-                              _loadCategories();
-                            }
-                          }
-                        } else {
-                          _showSnackbar('Failed to load category details for editing.');
-                        }
-                      }
-                    } catch (e) {
-                      _showSnackbar('Error: $e');
-                    } finally {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-            children: [
-              const Divider(color: const Color(0xFFE2E8F0), height: 1),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Subcategories:',
-                    style: TextStyle(color: const Color(0xFFF97316), fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  TextButton.icon(
-                    onPressed: () async {
-                      // Fetch full category details first
-                      setState(() {
-                        _isLoading = true;
-                      });
-                      try {
-                        final token = await SessionService.getToken();
-                        if (token != null) {
-                          final detailResp = await ApiService.fetchCategoryById(category['id'] as int, token);
-                          if (detailResp['data'] != null) {
-                            final fullCategory = detailResp['data'] as Map<String, dynamic>;
-                            if (mounted) {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CategoryFormScreen(category: fullCategory),
-                                ),
-                              );
-                              if (result == true) {
-                                _loadCategories();
-                              }
-                            }
-                          } else {
-                            _showSnackbar('Failed to load category details.');
-                          }
-                        }
-                      } catch (e) {
-                        _showSnackbar('Error: $e');
-                      } finally {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.add, size: 16, color: const Color(0xFFF97316)),
-                    label: const Text(
-                      'Manage Subs',
-                      style: TextStyle(color: const Color(0xFFF97316), fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (isLoadingSubs)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24.0),
-                  child: Center(
-                    child: CircularProgressIndicator(color: const Color(0xFFF97316), strokeWidth: 2),
-                  ),
-                )
-              else
-                subcategories.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          'No subcategories added yet.',
-                          style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3), fontSize: 13, fontStyle: FontStyle.italic),
-                        ),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: subcategories.length,
-                        itemBuilder: (context, sIndex) {
-                          final sub = subcategories[sIndex] as Map<String, dynamic>;
-                          final subName = sub['categories_subs_name']?.toString() ?? 'Unnamed Sub';
-                          final subImage = sub['categories_subs_image'] as String?;
-                          final subStatus = sub['categories_subs_status']?.toString() ?? 'Active';
-                          final subIsActive = subStatus.toLowerCase() == 'active';
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 8.0),
-                            padding: const EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: Colors.white,
-                                  backgroundImage: subImage != null && subImage.isNotEmpty
-                                      ? NetworkImage(_resolveSubcategoryImageUrl(subImage))
-                                      : null,
-                                  child: subImage == null || subImage.isEmpty
-                                      ? const Icon(Icons.subdirectory_arrow_right, color: const Color(0xFFF97316), size: 16)
-                                      : null,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    subName,
-                                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                  decoration: BoxDecoration(
-                                    color: subIsActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    subStatus,
-                                    style: TextStyle(
-                                      color: subIsActive ? Colors.greenAccent : Colors.redAccent,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-            ],
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 18,
+                      width: 32,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Switch(
+                          value: isActive,
+                          activeColor: const Color(0xFFF97316),
+                          inactiveTrackColor: const Color(0xFFE2E8F0),
+                          onChanged: (val) => _toggleCategoryStatus(category, val),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.edit_outlined, color: Color(0xFF64748B), size: 16),
+                      onPressed: () async {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        try {
+                          final token = await SessionService.getToken();
+                          if (token != null) {
+                            final detailResp = await ApiService.fetchCategoryById(category['id'] as int, token);
+                            if (detailResp['data'] != null) {
+                              final fullCategory = detailResp['data'] as Map<String, dynamic>;
+                              if (mounted) {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CategoryFormScreen(category: fullCategory),
+                                  ),
+                                );
+                                if (result == true) {
+                                  _loadCategories();
+                                }
+                              }
+                            } else {
+                              _showSnackbar('Failed to load category details.');
+                            }
+                          }
+                        } catch (e) {
+                          _showSnackbar('Error: $e');
+                        } finally {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

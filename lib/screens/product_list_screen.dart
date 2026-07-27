@@ -96,6 +96,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget _buildProductCard(Map<String, dynamic> product) {
     final name = product['product_name']?.toString() ?? 'Unnamed Product';
     final desc = product['product_short_description']?.toString() ?? '';
+    final brandName = product['brands_name']?.toString() ?? 'No Brand';
     
     final hasVariants = product['has_variants'] == 1 || product['has_variants']?.toString() == '1';
     double price = 0.0;
@@ -150,7 +151,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final hasDiscount = discountPrice > 0.0 && discountPrice < price;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -163,119 +163,171 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        leading: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: thumbPath != null && thumbPath.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(_resolveProductImageUrl(thumbPath, isVariant: isVariantThumb), fit: BoxFit.cover),
-                )
-              : const Icon(Icons.image_outlined, color: const Color(0xFFCBD5E1), size: 28),
-        ),
-        title: Text(
-          name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Column(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (desc.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                desc,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: const Color(0xFF475569), fontSize: 12),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (hasDiscount) ...[
-                  Text(
-                    '₹${discountPrice.toStringAsFixed(0)}',
-                    style: const TextStyle(color: const Color(0xFFF97316), fontWeight: FontWeight.bold, fontSize: 14),
+            // Top portion: Image with Edit overlay
+            Expanded(
+              child: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: const Color(0xFFF8FAFC),
+                    child: thumbPath != null && thumbPath.isNotEmpty
+                        ? Image.network(
+                            _resolveProductImageUrl(thumbPath, isVariant: isVariantThumb),
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
+                        : const Center(
+                            child: Icon(Icons.image_outlined, color: Color(0xFFCBD5E1), size: 36),
+                          ),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '₹${price.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 12,
-                      decoration: TextDecoration.lineThrough,
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                          )
+                        ],
+                      ),
+                      child: IconButton(
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.all(6),
+                        icon: const Icon(Icons.edit_outlined, color: Color(0xFFF97316), size: 16),
+                        onPressed: () async {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          try {
+                            final token = await SessionService.getToken();
+                            if (token != null) {
+                              final detailResp = await ApiService.fetchProductById(product['id'] as int, token);
+                              if (detailResp['data'] != null) {
+                                final fullProduct = detailResp['data'] as Map<String, dynamic>;
+                                if (mounted) {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ProductFormScreen(product: fullProduct),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    _loadProducts();
+                                  }
+                                }
+                              } else {
+                                _showSnackbar('Failed to load product details for editing.');
+                              }
+                            }
+                          } catch (e) {
+                            _showSnackbar('Error loading product: $e');
+                          } finally {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ] else ...[
-                  Text(
-                    '₹${price.toStringAsFixed(0)}',
-                    style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ],
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: qty > 0 ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    qty > 0 ? '$qty in stock' : 'Out of stock',
-                    style: TextStyle(
-                      color: qty > 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+              ),
+            ),
+            
+            // Bottom portion: Details
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RichText(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    text: TextSpan(
+                      style: const TextStyle(fontSize: 13, fontFamily: 'Outfit'),
+                      children: [
+                        TextSpan(
+                          text: '$brandName ',
+                          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                          text: name,
+                          style: const TextStyle(color: Color(0xFF64748B)),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Price Info
+                      Row(
+                        children: [
+                          if (hasDiscount) ...[
+                            Text(
+                              '₹${price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 11,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '₹${discountPrice.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ] else ...[
+                            Text(
+                              '₹${price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      
+                      // Stock status badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: qty > 0 ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          qty > 0 ? '$qty Stock' : 'Out of Stock',
+                          style: TextStyle(
+                            color: qty > 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.edit_outlined, color: Color(0xFF475569)),
-          onPressed: () async {
-            setState(() {
-              _isLoading = true;
-            });
-            try {
-              final token = await SessionService.getToken();
-              if (token != null) {
-                final detailResp = await ApiService.fetchProductById(product['id'] as int, token);
-                if (detailResp['data'] != null) {
-                  final fullProduct = detailResp['data'] as Map<String, dynamic>;
-                  if (mounted) {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProductFormScreen(product: fullProduct),
-                      ),
-                    );
-                    if (result == true) {
-                      _loadProducts();
-                    }
-                  }
-                } else {
-                  _showSnackbar('Failed to load product details for editing.');
-                }
-              }
-            } catch (e) {
-              _showSnackbar('Error loading product: $e');
-            } finally {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
         ),
       ),
     );
@@ -364,29 +416,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             onRefresh: _loadProducts,
                             color: const Color(0xFFF97316),
                             backgroundColor: Colors.white,
-                            child: isDesktop
-                                ? GridView.builder(
-                                    padding: const EdgeInsets.all(16),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
-                                      childAspectRatio: 2.8,
-                                    ),
-                                    itemCount: _filteredProducts.length,
-                                    itemBuilder: (context, index) {
-                                      final product = _filteredProducts[index] as Map<String, dynamic>;
-                                      return _buildProductCard(product);
-                                    },
-                                  )
-                                : ListView.builder(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                    itemCount: _filteredProducts.length,
-                                    itemBuilder: (context, index) {
-                                      final product = _filteredProducts[index] as Map<String, dynamic>;
-                                      return _buildProductCard(product);
-                                    },
-                                  ),
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isDesktop ? 6 : 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: isDesktop ? 0.70 : 0.72,
+                              ),
+                              itemCount: _filteredProducts.length,
+                              itemBuilder: (context, index) {
+                                final product = _filteredProducts[index] as Map<String, dynamic>;
+                                return _buildProductCard(product);
+                              },
+                            ),
                           ),
               ),
             ],

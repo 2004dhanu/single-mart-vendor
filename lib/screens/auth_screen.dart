@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
 import 'register_screen.dart';
@@ -176,7 +177,19 @@ class _AuthScreenState extends State<AuthScreen> {
     final mobileNum = _phoneController.text.trim();
     
     if (_isRegistered) {
-      final loginResult = await ApiService.login(mobileNum, _backendOtp);
+      String fcmToken = '';
+     
+      try {
+        
+        fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+         debugPrint("====================");
+debugPrint("FCM TOKEN:");
+debugPrint(fcmToken);
+debugPrint("====================");
+      } catch (e) {
+        debugPrint('FCM Token error: $e');
+      }
+      final loginResult = await ApiService.login(mobileNum, _backendOtp, deviceId: fcmToken);
       final code = loginResult['code'] as int? ?? 500;
       
       if (code == 200 && loginResult['data'] != null) {
@@ -316,7 +329,146 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
     
+    final Widget formCard = Container(
+      width: isDesktop ? 450 : double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: AnimatedCrossFade(
+        duration: const Duration(milliseconds: 300),
+        crossFadeState: _showOtpInput
+            ? CrossFadeState.showSecond
+            : CrossFadeState.showFirst,
+        firstChild: _buildPhoneInputWidget(theme),
+        secondChild: _buildOtpInputWidget(theme),
+      ),
+    );
+
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        body: Row(
+          children: [
+            // Left Side Panel: Branding & Marketing info
+            Expanded(
+              flex: 5,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFEA580C),
+                      Color(0xFFF97316),
+                      Color(0xFFFF9D43),
+                    ],
+                  ),
+                ),
+                padding: const EdgeInsets.all(48),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Brand Icon
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.storefront_rounded,
+                        size: 48,
+                        color: Color(0xFFF97316),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'SINGLE MART',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const Text(
+                      'Vendor Management Portal',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    _buildBenefitItem(
+                      Icons.inventory_2_outlined,
+                      'Easy Catalog Management',
+                      'Add and update products, categories, subcategories and attributes in real-time.',
+                    ),
+                    const SizedBox(height: 24),
+                    _buildBenefitItem(
+                      Icons.analytics_outlined,
+                      'Sales & Statistics Overview',
+                      'Monitor store health, inventory levels and user statistics directly from the dashboard.',
+                    ),
+                    const SizedBox(height: 24),
+                    _buildBenefitItem(
+                      Icons.shopping_bag_outlined,
+                      'Seamless Order Processing',
+                      'Manage pending registrations and approved vendor orders without hassles.',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Right Side Panel: Interactive Form
+            Expanded(
+              flex: 4,
+              child: Container(
+                color: const Color(0xFFF8FAFC),
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        formCard,
+                        const SizedBox(height: 24),
+                        Text(
+                          '© 2026 Single Mart. All rights reserved.',
+                          style: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.4), fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Mobile / Tablet layout
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -333,14 +485,13 @@ class _AuthScreenState extends State<AuthScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // App Logo Container
                   Container(
-                    width: 90,
-                    height: 90,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
@@ -355,65 +506,63 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     child: const Icon(
                       Icons.storefront_rounded,
-                      size: 44,
+                      size: 40,
                       color: Color(0xFFF97316),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   const Text(
                     'SINGLE MART',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                      color: Color(0xFF0F172A),
                       letterSpacing: 2,
                     ),
                   ),
                   const Text(
                     'Vendor Portal',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Color(0xFFF97316),
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1,
                     ),
                   ),
-                  const SizedBox(height: 36),
-                  
-                  // Interactive Card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: const Color(0xFFE2E8F0),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: AnimatedCrossFade(
-                      duration: const Duration(milliseconds: 300),
-                      crossFadeState: _showOtpInput
-                          ? CrossFadeState.showSecond
-                          : CrossFadeState.showFirst,
-                      firstChild: _buildPhoneInputWidget(theme),
-                      secondChild: _buildOtpInputWidget(theme),
-                    ),
-                  ),
+                  const SizedBox(height: 32),
+                  formCard,
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBenefitItem(IconData icon, String title, String subtitle) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: Colors.white, size: 24),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -426,7 +575,7 @@ class _AuthScreenState extends State<AuthScreen> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Color(0xFF0F172A),
           ),
         ),
         const SizedBox(height: 6),
@@ -443,7 +592,7 @@ class _AuthScreenState extends State<AuthScreen> {
           controller: _phoneController,
           keyboardType: TextInputType.phone,
           maxLength: 10,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             counterText: '',
             prefixIcon: Container(
@@ -532,7 +681,7 @@ class _AuthScreenState extends State<AuthScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Color(0xFF0F172A),
               ),
             ),
           ],
@@ -556,7 +705,7 @@ class _AuthScreenState extends State<AuthScreen> {
           maxLength: 6,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Colors.white,
+            color: Color(0xFF0F172A),
             fontSize: 22,
             fontWeight: FontWeight.bold,
             letterSpacing: 8,

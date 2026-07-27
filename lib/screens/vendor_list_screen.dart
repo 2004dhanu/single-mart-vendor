@@ -327,7 +327,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(name, style: const TextStyle(color: Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Text(owner, style: const TextStyle(color: const Color(0xFF334155), fontSize: 14)),
                   const SizedBox(height: 6),
@@ -408,7 +408,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
           Expanded(
             child: Text(
               value.isEmpty ? 'N/A' : value,
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              style: const TextStyle(color: Color(0xFF0F172A), fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -454,7 +454,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildApprovedTab() {
+  Widget _buildApprovedTab(bool isDesktop) {
     if (_approvedVendors.isEmpty) {
       if (_approvedError != null) {
         return _buildErrorState('Approved List Error', _approvedError!);
@@ -462,81 +462,23 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
       return const Center(child: Text('No approved vendors found.', style: TextStyle(color: const Color(0xFF475569))));
     }
 
-    return ListView.builder(
+    return GridView.builder(
       padding: const EdgeInsets.all(16),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 4 : 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: isDesktop ? 2.2 : 1.4,
+      ),
       itemCount: _approvedVendors.length,
       itemBuilder: (context, index) {
         final vendor = _approvedVendors[index] as Map<String, dynamic>;
-        final id = vendor['id'] as int;
-        final name = vendor['name'] ?? 'Vendor ${vendor['id']}';
-        final mobile = vendor['mobile'] ?? 'N/A';
-        final status = vendor['status'] ?? 'Active';
-        final isActive = status == 'Active';
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: const Color(0xFFF97316).withOpacity(0.1),
-                child: const Icon(Icons.storefront, color: const Color(0xFFF97316), size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'ID: $id | Mobile: $mobile',
-                      style: const TextStyle(color: const Color(0xFF475569), fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        status,
-                        style: TextStyle(color: isActive ? Colors.greenAccent : Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(width: 4),
-                      Switch(
-                        value: isActive,
-                        activeColor: Colors.greenAccent,
-                        inactiveThumbColor: Colors.redAccent,
-                        onChanged: (_) => _toggleVendorStatus(id, status),
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: () => _viewVendorDetails(vendor),
-                    child: const Text('View Profile', style: TextStyle(color: const Color(0xFFF97316), fontSize: 12)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
+        return _buildApprovedCard(vendor);
       },
     );
   }
 
-  Widget _buildPendingTab() {
+  Widget _buildPendingTab(bool isDesktop) {
     return Column(
       children: [
         Container(
@@ -582,67 +524,18 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
               ? (_pendingError != null
                   ? _buildErrorState('Pending List Error', _pendingError!)
                   : const Center(child: Text('No pending approval requests.', style: TextStyle(color: const Color(0xFF475569)))))
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+              : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isDesktop ? 4 : 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: isDesktop ? 2.2 : 1.4,
+                  ),
                   itemCount: _pendingVendors.length,
                   itemBuilder: (context, index) {
                     final vendor = _pendingVendors[index] as Map<String, dynamic>;
-                    final id = vendor['id'] as int;
-                    final name = vendor['name'] ?? 'Vendor $id';
-                    final mobile = vendor['mobile'] ?? 'N/A';
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.orangeAccent.withOpacity(0.1),
-                            child: const Icon(Icons.pending_actions_rounded, color: Colors.orangeAccent, size: 24),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  name,
-                                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'ID: $id | Mobile: $mobile',
-                                  style: const TextStyle(color: const Color(0xFF475569), fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            children: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.greenAccent,
-                                  foregroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                                onPressed: () => _approveVendorById(id),
-                                child: const Text('Approve', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              TextButton(
-                                onPressed: () => _viewVendorDetails(vendor),
-                                child: const Text('View Profile', style: TextStyle(color: const Color(0xFFF97316), fontSize: 11)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
+                    return _buildPendingCard(vendor);
                   },
                 ),
         ),
@@ -706,8 +599,207 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
     );
   }
 
+  Widget _buildApprovedCard(Map<String, dynamic> vendor) {
+    final id = vendor['id'] as int;
+    final name = vendor['name'] ?? 'Vendor $id';
+    final mobile = vendor['mobile'] ?? 'N/A';
+    final status = vendor['status'] ?? 'Active';
+    final isActive = status == 'Active';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: const Center(
+              child: Icon(Icons.storefront, color: Color(0xFFF97316), size: 24),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'ID: $id | $mobile',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 18,
+                      width: 32,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Switch(
+                          value: isActive,
+                          activeColor: const Color(0xFF16A34A),
+                          inactiveTrackColor: const Color(0xFFE2E8F0),
+                          onChanged: (_) => _toggleVendorStatus(id, status),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.visibility_outlined, color: Color(0xFF64748B), size: 16),
+                      onPressed: () => _viewVendorDetails(vendor),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPendingCard(Map<String, dynamic> vendor) {
+    final id = vendor['id'] as int;
+    final name = vendor['name'] ?? 'Vendor $id';
+    final mobile = vendor['mobile'] ?? 'N/A';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: const Center(
+              child: Icon(Icons.pending_actions_rounded, color: Colors.orangeAccent, size: 24),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'ID: $id | $mobile',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    SizedBox(
+                      height: 26,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.greenAccent,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        ),
+                        onPressed: () => _approveVendorById(id),
+                        child: const Text('Approve', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.visibility_outlined, color: Color(0xFF64748B), size: 16),
+                      onPressed: () => _viewVendorDetails(vendor),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -716,7 +808,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Vendor Registrations',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -729,7 +821,7 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
           controller: _tabController,
           indicatorColor: const Color(0xFFF97316),
           labelColor: const Color(0xFFF97316),
-          unselectedLabelColor: Colors.white54,
+          unselectedLabelColor: const Color(0xFF64748B),
           tabs: const [
             Tab(text: 'Approved'),
             Tab(text: 'Pending'),
@@ -738,12 +830,17 @@ class _VendorListScreenState extends State<VendorListScreen> with SingleTickerPr
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildApprovedTab(),
-                _buildPendingTab(),
-              ],
+          : Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildApprovedTab(isDesktop),
+                    _buildPendingTab(isDesktop),
+                  ],
+                ),
+              ),
             ),
     );
   }

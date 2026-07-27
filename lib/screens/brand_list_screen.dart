@@ -162,6 +162,8 @@ class _BrandListScreenState extends State<BrandListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -170,7 +172,7 @@ class _BrandListScreenState extends State<BrandListScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Brands Management',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -189,65 +191,76 @@ class _BrandListScreenState extends State<BrandListScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          // Search Input
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(color: const Color(0xFF0F172A)),
-              decoration: InputDecoration(
-                hintText: 'Search brands...',
-                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
-                filled: true,
-                fillColor: Colors.white,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              // Search Input
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: const Color(0xFF0F172A)),
+                  decoration: InputDecoration(
+                    hintText: 'Search brands...',
+                    hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                    prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
+                    filled: true,
+                    fillColor: Colors.white,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: const Color(0xFFF97316)),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          // Main List / Loader
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
-                : _filteredBrands.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.branding_watermark_outlined, color: const Color(0xFFCBD5E1), size: 64),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No brands found',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
+              // Main List / Loader
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
+                    : _filteredBrands.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.branding_watermark_outlined, color: const Color(0xFFCBD5E1), size: 64),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'No brands found',
+                                  style: TextStyle(color: Color(0xFF475569), fontSize: 16),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadBrands,
-                        color: const Color(0xFFF97316),
-                        backgroundColor: const Color(0xFF1E293B),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          itemCount: _filteredBrands.length,
-                          itemBuilder: (context, index) {
-                            final brand = _filteredBrands[index] as Map<String, dynamic>;
-                            return _buildBrandCard(brand);
-                          },
-                        ),
-                      ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadBrands,
+                            color: const Color(0xFFF97316),
+                            backgroundColor: Colors.white,
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isDesktop ? 4 : 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: isDesktop ? 2.2 : 1.4,
+                              ),
+                              itemCount: _filteredBrands.length,
+                              itemBuilder: (context, index) {
+                                final brand = _filteredBrands[index] as Map<String, dynamic>;
+                                return _buildBrandCard(brand);
+                              },
+                            ),
+                          ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -259,77 +272,110 @@ class _BrandListScreenState extends State<BrandListScreen> {
     final isActive = status.toLowerCase() == 'active';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.white,
-          backgroundImage: imagePath != null && imagePath.isNotEmpty
-              ? NetworkImage(_resolveBrandImageUrl(imagePath))
-              : null,
-          child: imagePath == null || imagePath.isEmpty
-              ? const Icon(Icons.branding_watermark, color: const Color(0xFFF97316), size: 24)
-              : null,
-        ),
-        title: Text(
-          name,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Container(
-          margin: const EdgeInsets.only(top: 6.0),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          alignment: Alignment.centerLeft,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
             decoration: BoxDecoration(
-              color: isActive ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: isActive ? Colors.greenAccent : Colors.redAccent,
-                width: 0.5,
-              ),
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            child: Text(
-              status,
-              style: TextStyle(
-                color: isActive ? Colors.greenAccent : Colors.redAccent,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: imagePath != null && imagePath.isNotEmpty
+                  ? Image.network(
+                      _resolveBrandImageUrl(imagePath),
+                      fit: BoxFit.cover,
+                    )
+                  : const Icon(Icons.branding_watermark, color: Color(0xFFCBD5E1), size: 24),
             ),
           ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Switch(
-              value: isActive,
-              activeColor: const Color(0xFFF97316),
-              inactiveTrackColor: const Color(0xFFE2E8F0),
-              onChanged: (val) => _toggleBrandStatus(brand, val),
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => BrandFormScreen(brand: brand),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
-                );
-                if (result == true) {
-                  _loadBrands();
-                }
-              },
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 18,
+                      width: 32,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Switch(
+                          value: isActive,
+                          activeColor: const Color(0xFFF97316),
+                          inactiveTrackColor: const Color(0xFFE2E8F0),
+                          onChanged: (val) => _toggleBrandStatus(brand, val),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.edit_outlined, color: Color(0xFF64748B), size: 16),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BrandFormScreen(brand: brand),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadBrands();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

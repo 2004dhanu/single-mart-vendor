@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
+import '../widgets/square_image_cropper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EditProfileScreen extends StatefulWidget {
   final Map<String, dynamic> userDetails;
@@ -162,15 +164,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
       if (pickedFile != null) {
-        setState(() {
-          if (type == 'user_image') {
-            _userImageFile = File(pickedFile.path);
-          } else if (type == 'qr_code') {
-            _qrCodeFile = File(pickedFile.path);
-          } else if (type == 'business_document') {
-            _businessDocFile = File(pickedFile.path);
+        if (mounted) {
+          final cropped = await SquareImageCropper.crop(context, File(pickedFile.path));
+          if (cropped != null) {
+            setState(() {
+              if (type == 'user_image') {
+                _userImageFile = cropped;
+              } else if (type == 'qr_code') {
+                _qrCodeFile = cropped;
+              } else if (type == 'business_document') {
+                _businessDocFile = cropped;
+              }
+            });
           }
-        });
+        }
       }
     } catch (e) {
       _showSnackbar('Error picking image: $e');
@@ -218,7 +225,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.file(localFile, fit: BoxFit.cover),
+                        kIsWeb
+                            ? Image.network(localFile.path, fit: BoxFit.cover)
+                            : Image.file(localFile, fit: BoxFit.cover),
                         Container(color: Colors.black38),
                         const Center(
                           child: Icon(Icons.change_circle_rounded, color: const Color(0xFFF97316), size: 40),

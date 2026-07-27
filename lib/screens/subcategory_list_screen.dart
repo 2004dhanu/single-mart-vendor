@@ -175,6 +175,8 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 900;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -183,7 +185,7 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
         title: const Text(
           'Subcategories Management',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -201,138 +203,192 @@ class _SubcategoryListScreenState extends State<SubcategoryListScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          // Search Input
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(color: const Color(0xFF0F172A)),
-              decoration: InputDecoration(
-                hintText: 'Search subcategories...',
-                hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
-                prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
-                filled: true,
-                fillColor: Colors.white,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: const Color(0xFFF97316)),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              // Search Input
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: const Color(0xFF0F172A)),
+                  decoration: InputDecoration(
+                    hintText: 'Search subcategories...',
+                    hintStyle: TextStyle(color: const Color(0xFF0F172A).withOpacity(0.3)),
+                    prefixIcon: const Icon(Icons.search, color: const Color(0xFF475569)),
+                    filled: true,
+                    fillColor: Colors.white,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: const Color(0xFFF97316)),
+                    ),
+                  ),
                 ),
               ),
+
+              // Main List / Loader
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
+                    : _filteredSubcategories.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.lan_outlined, color: const Color(0xFFCBD5E1), size: 64),
+                                const SizedBox(height: 16),
+                                 const Text(
+                                  'No subcategories found',
+                                  style: TextStyle(color: Color(0xFF475569), fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadSubcategories,
+                            color: const Color(0xFFF97316),
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isDesktop ? 4 : 2,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: isDesktop ? 2.2 : 1.4,
+                              ),
+                              itemCount: _filteredSubcategories.length,
+                              itemBuilder: (context, index) {
+                                final sub = _filteredSubcategories[index];
+                                return _buildSubcategoryCard(sub);
+                              },
+                            ),
+                          ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubcategoryCard(SubcategoryItem sub) {
+    final isActive = sub.status == 'Active';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: sub.image != null && sub.image!.isNotEmpty
+                  ? Image.network(
+                      _resolveSubcategoryImageUrl(sub.image),
+                      fit: BoxFit.cover,
+                    )
+                  : const Icon(Icons.folder_open_outlined, color: Color(0xFFCBD5E1), size: 24),
             ),
           ),
-
-          // Main List / Loader
+          const SizedBox(width: 12),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: const Color(0xFFF97316)))
-                : _filteredSubcategories.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.lan_outlined, color: const Color(0xFFCBD5E1), size: 64),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No subcategories found',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadSubcategories,
-                        color: const Color(0xFFF97316),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          itemCount: _filteredSubcategories.length,
-                          itemBuilder: (context, index) {
-                            final sub = _filteredSubcategories[index];
-                            final isActive = sub.status == 'Active';
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
-                              child: ListTile(
-                                leading: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: sub.image != null && sub.image!.isNotEmpty
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(10),
-                                          child: Image.network(
-                                            _resolveSubcategoryImageUrl(sub.image),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
-                                      : const Icon(Icons.folder_open_outlined, color: const Color(0xFFCBD5E1)),
-                                ),
-                                title: Text(
-                                  sub.name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                subtitle: Container(
-                                  margin: const EdgeInsets.only(top: 4.0),
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.purple.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(6.0),
-                                  ),
-                                  child: Text(
-                                    'Category: ${sub.categoryName}',
-                                    style: const TextStyle(
-                                      color: const Color(0xFFF97316),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Switch(
-                                      value: isActive,
-                                      activeColor: const Color(0xFFF97316),
-                                      inactiveThumbColor: Colors.white54,
-                                      onChanged: (val) => _toggleStatus(sub, isActive),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.edit_outlined, color: const Color(0xFF334155)),
-                                      onPressed: () async {
-                                        final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => SubcategoryFormScreen(sub: sub),
-                                          ),
-                                        );
-                                        if (result == true) {
-                                          _loadSubcategories();
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  sub.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Category: ${sub.categoryName}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        sub.status,
+                        style: TextStyle(
+                          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      height: 18,
+                      width: 32,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Switch(
+                          value: isActive,
+                          activeColor: const Color(0xFFF97316),
+                          inactiveTrackColor: const Color(0xFFE2E8F0),
+                          onChanged: (val) => _toggleStatus(sub, isActive),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.edit_outlined, color: Color(0xFF64748B), size: 16),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SubcategoryFormScreen(sub: sub),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadSubcategories();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
